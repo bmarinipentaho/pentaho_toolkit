@@ -5,44 +5,17 @@
 
 set -euo pipefail
 
+# Get script directory and source common functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$TOOLKIT_ROOT/shared/lib/common.sh"
+
 CONTAINER_NAME="portainer"
 PORTAINER_IMAGE="portainer/portainer-ce:latest"
 VOLUME_NAME="portainer_data"
 
 # Auto-confirm flag
 AUTO_CONFIRM=false
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Logging functions
-log() {
-    echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
-}
-
-success() {
-    echo -e "${GREEN}✓${NC} $1"
-}
-
-warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
-}
-
-error() {
-    echo -e "${RED}✗${NC} $1"
-}
-
-header() {
-    echo ""
-    echo -e "${BLUE}╔══════════════════════════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║${NC} $(printf "%-84s" "$1") ${BLUE}║${NC}"
-    echo -e "${BLUE}╚══════════════════════════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-}
 
 # Check if Portainer container exists
 container_exists() {

@@ -9,9 +9,11 @@ set -euo pipefail
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
+TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+readonly TOOLKIT_ROOT
 
-# Source common functions
-source "$SCRIPT_DIR/../lib/common.sh"
+# Source common functions from shared lib
+source "$TOOLKIT_ROOT/shared/lib/common.sh"
 
 # Auto-confirm flag
 AUTO_CONFIRM=false

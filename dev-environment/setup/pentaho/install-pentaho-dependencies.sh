@@ -6,44 +6,18 @@
 
 set -euo pipefail
 
-# Color definitions
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
-readonly NC='\033[0m' # No Color
-
-# Get script directory
+# Get script directory and source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly PACKAGES_DIR="$SCRIPT_DIR/../resources/packages/libwebkit"
+TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+readonly TOOLKIT_ROOT
+readonly PACKAGES_DIR="$TOOLKIT_ROOT/dev-environment/resources/packages/libwebkit"
+
+# Source common functions
+source "$TOOLKIT_ROOT/shared/lib/common.sh"
 
 # Auto-confirm flag
 AUTO_CONFIRM=false
-
-# Logging functions
-log() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-error() {
-    echo -e "${RED}[ERROR]${NC} $1" >&2
-}
-
-header() {
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo -e "${YELLOW}$1${NC}"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-}
 
 # Check if running with sudo/root (we need it for apt install)
 check_permissions() {

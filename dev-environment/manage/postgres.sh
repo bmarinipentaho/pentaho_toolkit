@@ -5,25 +5,26 @@ set -euo pipefail
 # Get script directory and docker compose location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKER_DIR="$SCRIPT_DIR/../setup/docker/postgres"
+TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Source common functions
-source "$SCRIPT_DIR/../lib/common.sh"
+# Source common functions from shared lib
+source "$TOOLKIT_ROOT/shared/lib/common.sh"
 
 # Auto-confirm flag
 AUTO_CONFIRM=false
 
 # Check if Docker is available
 check_docker() {
-    if ! command -v docker &> /dev/null; then
-        error "Docker is not installed. Please run the VM essentials setup script first."
+    if ! command_exists docker; then
+        die "Docker is not installed. Please run the VM essentials setup script first."
     fi
     
-    if ! docker info &> /dev/null; then
-        error "Docker is not running. Please start Docker service."
+    if ! check_docker_running; then
+        die "Docker is not running. Please start Docker service."
     fi
     
-    if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-        error "Docker Compose is not available."
+    if ! command_exists docker-compose && ! docker compose version &> /dev/null; then
+        die "Docker Compose is not available."
     fi
 }
 

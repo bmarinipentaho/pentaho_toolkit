@@ -4,7 +4,8 @@ set -euo pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/../../lib/common.sh"
+TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+source "$TOOLKIT_ROOT/shared/lib/common.sh"
 
 header "⚙️  Pentaho Environment Configuration"
 

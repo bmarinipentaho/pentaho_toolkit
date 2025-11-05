@@ -32,12 +32,6 @@ cd dev-environment
 
 ```
 pentaho_toolkit/
-├── ael/                        # AEL environment automation
-│   ├── deploy_ael.sh          # Main deployment script
-│   ├── remove_ael.sh          # Cleanup script
-│   ├── scripts/               # Component installers (Hadoop, Spark, AEL)
-│   └── siteFiles/             # Configuration templates
-│
 ├── dev-environment/           # Development environment setup
 │   ├── setup/                 # Installation scripts
 │   │   ├── main.sh           # Main setup orchestrator
@@ -47,35 +41,34 @@ pentaho_toolkit/
 │   ├── manage/               # Management utilities
 │   │   ├── postgres.sh       # PostgreSQL operations
 │   │   └── portainer.sh      # Portainer management
-│   └── lib/                  # Legacy library location
+│   ├── docs/                 # Documentation
+│   ├── resources/            # Package files and configs
+│   └── utils/                # Utility scripts
 │
-├── shared/                    # Shared utilities (future use)
+├── pentaho/                   # Pentaho platform (under development)
+│   ├── server/               # Pentaho Server installation
+│   └── pdi/                  # PDI Client installation
+│
+├── data-platform/            # Big data components (under development)
+│   ├── hadoop/               # Hadoop HDFS & YARN
+│   └── spark/                # Apache Spark
+│
+├── ael/                      # AEL Spark execution (being rebuilt)
+│   ├── [Old scripts]         # Original ael-automation files
+│   └── README.md             # New modular design documentation
+│
+├── workflows/                # End-to-end orchestrators (coming soon)
+│   └── README.md             # Workflow documentation
+│
+├── shared/                   # Shared utilities
 │   └── lib/
 │       └── common.sh         # Common functions, logging, validation
 │
-└── docs/                      # Documentation
+└── docs/                     # General documentation
 
 ```
 
 ## What's Inside
-
-### AEL Environment (`ael/`)
-
-Automated setup for testing Pentaho transformations with Spark execution:
-
-- **Java 21** - OpenJDK installation and configuration
-- **Hadoop 3.4.1** - HDFS setup with single-node configuration
-- **Spark 3.5.4** - With history server and event logging
-- **AEL Daemon** - Pentaho Spark execution harness
-- **Flexible deployment** - Support for local files, URLs, or JFrog API keys
-
-**Key Features:**
-- Version overrides via flags (`--hadoop-version`, `--spark-version`)
-- YARN mode support (`--yarn-mode`)
-- Comprehensive cleanup with selective purging
-- Configuration regeneration without redeployment
-
-📖 **[Full AEL Documentation](ael/AEL_README.md)**
 
 ### Development Environment (`dev-environment/`)
 
@@ -88,45 +81,107 @@ Tools for setting up a complete Pentaho development environment:
 - **System Tools** - VSCode, GitHub CLI, dev utilities
 - **Pentaho Dependencies** - Libraries and packages required for PDI
 
+**Shared Library:** All dev-environment scripts now use `shared/lib/common.sh` for consistent logging, error handling, and validation.
+
 📖 **[Full Dev Environment Documentation](dev-environment/DEV_README.md)**
+
+---
+
+### Pentaho Platform (`pentaho/`) - Under Development
+
+Modular installation of core Pentaho components:
+
+- **Pentaho Server** - Business analytics platform
+- **PDI Client** - Data integration tool (Spoon/Kitchen/Pan)
+- **Configuration** - Automated setup with PostgreSQL integration
+
+📖 **[Pentaho Module Documentation](pentaho/README.md)**
+
+---
+
+### Data Platform (`data-platform/`) - Under Development
+
+Big data infrastructure components:
+
+- **Hadoop 3.4.1+** - HDFS and YARN for distributed storage and processing
+- **Spark 4.0.0+** - Distributed computation engine
+- **Independent Modules** - Can be used standalone or with AEL
+
+📖 **[Data Platform Documentation](data-platform/README.md)**
+
+---
+
+### AEL - Adaptive Execution Layer (`ael/`) - Being Rebuilt
+
+Pentaho Spark execution addon for distributed transformations:
+
+- **Current:** Original ael-automation scripts (functional but legacy)
+- **Future:** Rebuilt with modular design, proper validation, and modern practices
+- **Dependencies:** Requires `pentaho/pdi/`, `data-platform/hadoop/`, and `data-platform/spark/`
+
+📖 **[AEL Documentation](ael/README.md)** | **[Old AEL README](ael/AEL_README.md)**
+
+---
+
+### Workflows (`workflows/`) - Coming Soon
+
+End-to-end orchestration scripts for common scenarios:
+
+- `setup-development.sh` - Dev tools only
+- `setup-basic-pentaho.sh` - PostgreSQL + Pentaho Server + PDI
+- `setup-ael-environment.sh` - Complete AEL testing environment
+
+📖 **[Workflow Documentation](workflows/README.md)**
+
+---
 
 ### Shared Libraries (`shared/`)
 
-Common utilities used across the toolkit (under development):
+Common utilities used across all modules:
 
-- **Logging framework** - Colored output, log levels, consistent formatting
+- **Logging framework** - Colored output with log levels (log, success, error, warning)
 - **Validation functions** - Input validation, prerequisite checks
 - **Service management** - Health checks, port monitoring
-- **Error handling** - Standardized error reporting
+- **Error handling** - Standardized error reporting with `die()` function
+
+All new code sources from `shared/lib/common.sh` for consistency.
 
 ## Use Cases
 
-### 1. QA Testing AEL Transformations
+### 1. Setting Up a New Development VM
 ```bash
-cd ael
-./deploy_ael.sh /path/to/pdi-ee-client.zip
-# Run your transformations
-./remove_ael.sh --purge-hdfs
-```
-
-### 2. Setting Up a New Development VM
-```bash
-cd dev-environment
-./setup/main.sh
+cd dev-environment/setup
+./main.sh
 # Installs Docker, PostgreSQL, VSCode, and development tools
 ```
 
-### 3. Testing YARN Mode
+### 2. Installing Pentaho Platform (Coming Soon)
 ```bash
-cd ael
-./deploy_ael.sh --yarn-mode /path/to/artifacts.zip
+cd workflows
+./setup-basic-pentaho.sh
+# PostgreSQL + Pentaho Server + PDI Client + Configurations
 ```
 
-### 4. Database Development
+### 3. Complete AEL Environment (Coming Soon)
 ```bash
-cd dev-environment
-./manage/postgres.sh start
+cd workflows
+./setup-ael-environment.sh --mode local
+# Everything needed for AEL testing
+```
+
+### 4. Database Management
+```bash
+cd dev-environment/manage
+./postgres.sh start
 # Access pgAdmin at http://localhost:5050
+```
+
+### 5. Modular Component Installation (Coming Soon)
+```bash
+# Install just what you need
+cd data-platform/hadoop && ./install.sh
+cd data-platform/spark && ./install.sh
+cd ael && ./install.sh
 ```
 
 ## Target Environment
@@ -189,12 +244,41 @@ sudo lsof -i :8080
 
 ## Roadmap
 
-- [ ] Migrate all scripts to use shared logging library
-- [ ] Parameterize hardcoded values (users, paths, ports)
-- [ ] Add comprehensive validation and health checks
-- [ ] Create automated smoke tests
-- [ ] Docker containerization for AEL
+### Phase 1: Dev Environment (In Progress) ✅
+- [x] Consolidate repositories into unified structure
+- [x] Migrate all scripts to shared logging library
+- [x] Remove redundant code and improve error handling
+- [x] Create modular directory structure
+
+### Phase 2: Basic Pentaho (Next)
+- [ ] Pentaho Server installation scripts
+- [ ] PDI Client installation and configuration
+- [ ] PostgreSQL integration and repository setup
+- [ ] Basic workflow orchestrator
+
+### Phase 3: Data Platform
+- [ ] Extract Hadoop setup from old AEL scripts
+- [ ] Extract Spark setup from old AEL scripts
+- [ ] Create independent, reusable modules
+- [ ] Add comprehensive validation and verification
+
+### Phase 4: AEL Rebuild
+- [ ] Rebuild AEL addon installer with modern practices
+- [ ] Configuration management improvements
+- [ ] Local and YARN mode support
+- [ ] Integration with modular components
+
+### Phase 5: Testing & Documentation
+- [ ] Automated smoke tests for each module
 - [ ] CI/CD pipeline with shellcheck
+- [ ] Comprehensive troubleshooting guides
+- [ ] Video walkthroughs
+
+### Future Enhancements
+- [ ] Docker containerization for full stack
+- [ ] Multi-node cluster support
+- [ ] Automated backup and restore
+- [ ] Performance optimization guides
 
 ## Origin
 
