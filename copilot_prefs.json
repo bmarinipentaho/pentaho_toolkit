@@ -1,0 +1,58 @@
+{
+  "project_conventions": {
+    "scripts_must_be_non_interactive": true,
+    "all_scripts_support_auto_confirm_flag": true,
+    "use_hyphen_naming_for_scripts": true,
+    "all_scripts_source_lib_common": true,
+    "scripts_use_strict_mode": "set -euo pipefail",
+    "postgres_always_use_docker": true,
+    "prefer_modular_over_monolithic": true,
+    "max_script_length": 500,
+    "require_help_flag": true
+  },
+  "coding_standards": {
+    "bash_style": "Google Shell Style Guide",
+    "error_handling": "Always use die() function from common.sh",
+    "logging": "Use log(), success(), error(), warning() from common.sh",
+    "user_prompts": "Use confirm() function with AUTO_CONFIRM support"
+  },
+  "environment": {
+    "target_os": "Ubuntu 22.04 LTS",
+    "shell": "bash",
+    "grep_alias": "ripgrep (rg) - use /bin/grep for dpkg queries",
+    "docker_group_activation": "Use 'sg docker -c' for fresh installs"
+  },
+  "preferences": {
+    "prefer_terminal_commands": true,
+    "show_actual_execution": true,
+    "test_scripts_after_changes": true,
+    "update_readme_after_major_changes": false,
+    "no_backup_files": true,
+    "aggressive_cleanup": true,
+    "audit_structure_frequently": true,
+    "update_readme_before_commit": true,
+    "readme_is_source_of_truth": true
+  },
+  "commit_workflow": {
+    "pre_commit_checklist": [
+      "Update README.md with any structural or functional changes",
+      "Verify all commands and paths in README are accurate",
+      "Update Quick Start section if entry points changed",
+      "Update Access Information if ports/credentials changed",
+      "Verify Project Structure section matches actual layout"
+    ],
+    "readme_maintenance": "README.md must accurately reflect current state before every commit"
+  },
+  "cleanup_policy": {
+    "delete_not_preserve": "Never create .bak, .old, or backup files",
+    "purge_empty_files": true,
+    "remove_outdated_artifacts": true,
+    "challenge_orphaned_files": "Question purpose of any file not clearly needed",
+    "evaluate_structure": "Regularly suggest improvements to folder organization"
+  },
+  "notes": {
+    "libwebkit_workaround": "Use dpkg-query instead of dpkg | grep due to ripgrep alias",
+    "main_entry_point": "scripts/setup/main.sh",
+    "shared_library": "scripts/lib/common.sh"
+  }
+}

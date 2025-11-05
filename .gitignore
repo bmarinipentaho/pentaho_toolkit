@@ -2,10 +2,19 @@
 
 # Tarballs and downloads
 *.tar.gz
+*.tar.bz2
 *.tgz
 *.zip
+*.jar
+*.war
+*.rpm
+*.deb
+*.dmg
+*.exe
+*.msi
 tarballs/
 downloads/
+.tarballs/
 
 # Deployment artifacts
 ael_deployment/
@@ -14,12 +23,18 @@ ael_deployment/
 # Logs
 *.log
 logs/
+**/logs/
+spark-events/
+/tmp/hadoop-*
 
 # Temporary files
 *.tmp
+*.temp
 *.swp
+*.swo
 *~
 .DS_Store
+desktop.ini
 
 # Environment-specific
 .env
@@ -41,6 +56,7 @@ docker-compose.override.yml
 # IDE
 .idea/
 *.iml
+*.sublime-*
 .vscode/
 .project
 .classpath
@@ -54,6 +70,9 @@ Thumbs.db
 **/api_key*
 **/*password*
 **/*secret*
+**/*.key
+**/*.pem
+**/*.p12
 credentials.txt
 
 # Build artifacts
