@@ -90,13 +90,14 @@ Tools for setting up a complete Pentaho development environment:
 
 ---
 
-### Pentaho Platform (`pentaho/`) - Under Development
+### Pentaho Platform (`pentaho/`)
 
-Modular installation of core Pentaho components:
+PDI installation and cleanup tools:
 
-- **Pentaho Server** - Business analytics platform
-- **PDI Client** - Data integration tool (Spoon/Kitchen/Pan)
-- **Configuration** - Automated setup with PostgreSQL integration
+- **PDI Installer** - Install from local zips with version-based directories
+- **Cleanup Script** - Remove all PDI installations, caches, and temp files
+- **Parallel Installations** - Multiple PDI versions can coexist
+- **Pentaho Server** - Coming soon
 
 📖 **[Pentaho Module Documentation](pentaho/README.md)**
 
@@ -138,7 +139,7 @@ End-to-end orchestration scripts for common scenarios:
 
 ---
 
-### Shared Libraries (`shared/`)
+## Shared Libraries
 
 Common utilities used across all modules:
 
@@ -147,7 +148,7 @@ Common utilities used across all modules:
 - **Service management** - Health checks, port monitoring
 - **Error handling** - Standardized error reporting with `die()` function
 
-All new code sources from `shared/lib/common.sh` for consistency.
+**Location:** `lib/common.sh` - All scripts source this for consistency.
 
 ## Use Cases
 
