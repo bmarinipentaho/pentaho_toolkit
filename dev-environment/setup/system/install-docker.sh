@@ -5,7 +5,7 @@ set -euo pipefail
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-source "$TOOLKIT_ROOT/shared/lib/common.sh"
+source "$TOOLKIT_ROOT/lib/common.sh"
 
 # Set non-interactive mode
 export DEBIAN_FRONTEND=noninteractive

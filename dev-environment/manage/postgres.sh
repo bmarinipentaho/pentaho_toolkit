@@ -8,7 +8,7 @@ DOCKER_DIR="$SCRIPT_DIR/../setup/docker/postgres"
 TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Source common functions from shared lib
-source "$TOOLKIT_ROOT/shared/lib/common.sh"
+source "$TOOLKIT_ROOT/lib/common.sh"
 
 # Auto-confirm flag
 AUTO_CONFIRM=false

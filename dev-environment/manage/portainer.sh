@@ -8,7 +8,7 @@ set -euo pipefail
 # Get script directory and source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-source "$TOOLKIT_ROOT/shared/lib/common.sh"
+source "$TOOLKIT_ROOT/lib/common.sh"
 
 CONTAINER_NAME="portainer"
 PORTAINER_IMAGE="portainer/portainer-ce:latest"

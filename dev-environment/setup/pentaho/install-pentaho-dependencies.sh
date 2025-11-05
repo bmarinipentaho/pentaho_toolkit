@@ -14,7 +14,7 @@ readonly TOOLKIT_ROOT
 readonly PACKAGES_DIR="$TOOLKIT_ROOT/dev-environment/resources/packages/libwebkit"
 
 # Source common functions
-source "$TOOLKIT_ROOT/shared/lib/common.sh"
+source "$TOOLKIT_ROOT/lib/common.sh"
 
 # Auto-confirm flag
 AUTO_CONFIRM=false

@@ -13,7 +13,7 @@ TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 readonly TOOLKIT_ROOT
 
 # Source common functions from shared lib
-source "$TOOLKIT_ROOT/shared/lib/common.sh"
+source "$TOOLKIT_ROOT/lib/common.sh"
 
 # Auto-confirm flag
 AUTO_CONFIRM=false
@@ -36,10 +36,12 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "This script sets up a complete Pentaho development environment:"
             echo "  1. System tools and utilities"
-            echo "  2. Docker and Docker Compose"
-            echo "  3. PostgreSQL database with Pentaho schemas"
-            echo "  4. Portainer for container management"
-            echo "  5. Pentaho UI dependencies (LibWebKitGTK)"
+            echo "  2. Java (OpenJDK 21)"
+            echo "  3. Docker and Docker Compose"
+            echo "  4. Environment configuration"
+            echo "  5. Optional tools (VS Code, GitHub CLI)"
+            echo "  6. PostgreSQL database with Pentaho schemas"
+            echo "  7. Portainer for container management"
             exit 0
             ;;
         *)
@@ -54,10 +56,10 @@ done
 header "🚀 Pentaho Development Environment Setup"
 echo "This script will set up a complete development environment with:"
 echo "  • System development tools and utilities"
+echo "  • Java (OpenJDK 21)"
 echo "  • Docker and Docker Compose"
 echo "  • PostgreSQL database with pgAdmin web interface"
 echo "  • Portainer for Docker container management"
-echo "  • Pentaho UI dependencies (LibWebKitGTK 1.0)"
 echo ""
 
 if [[ "$AUTO_CONFIRM" == true ]]; then
@@ -82,30 +84,40 @@ log "Installing development tools and utilities..."
 success "Development tools installed"
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# STEP 2: Docker Installation
+# STEP 2: Java Installation
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-header "STEP 2: Docker Installation"
+header "STEP 2: Java Installation"
+
+log "Installing Java (required for Pentaho)..."
+"$SCRIPT_DIR/system/install-java.sh" || die "Java installation failed"
+success "Java installed"
+
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# STEP 3: Docker Installation
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+header "STEP 3: Docker Installation"
 
 log "Installing Docker and Docker Compose..."
 "$SCRIPT_DIR/setup/system/install-docker.sh" || die "Docker installation failed"
 success "Docker installed"
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# STEP 3: Environment Configuration
+# STEP 4: Environment Configuration
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-header "STEP 3: Environment Configuration"
+header "STEP 4: Environment Configuration"
 
 log "Configuring Pentaho environment..."
 "$SCRIPT_DIR/setup/system/configure-environment.sh" || die "Environment configuration failed"
 success "Environment configured"
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# STEP 4: Optional Tools (VS Code, GitHub CLI)
+# STEP 5: Optional Tools (VS Code, GitHub CLI)
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-header "STEP 4: Optional Development Tools"
+header "STEP 5: Optional Development Tools"
 
 if [[ "$AUTO_CONFIRM" == true ]] || confirm "Install Visual Studio Code?" "Y"; then
     "$SCRIPT_DIR/setup/system/install-vscode.sh" || warning "VS Code installation failed (continuing)"
@@ -116,7 +128,7 @@ if [[ "$AUTO_CONFIRM" == true ]] || confirm "Install GitHub CLI?" "Y"; then
 fi
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# STEP 5: PostgreSQL Database Setup
+# STEP 6: PostgreSQL Database Setup
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 header "STEP 5: PostgreSQL Database Setup"
@@ -132,10 +144,10 @@ else
 fi
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# STEP 6: Portainer Container Management
+# STEP 7: Portainer Container Management
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-header "STEP 6: Portainer Container Management"
+header "STEP 7: Portainer Container Management"
 
 log "Setting up Portainer..."
 if sg docker -c "$SCRIPT_DIR/manage/portainer.sh start"; then
