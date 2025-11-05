@@ -32,40 +32,42 @@ cd dev-environment
 
 ```
 pentaho_toolkit/
-├── dev-environment/           # Development environment setup
-│   ├── setup/                 # Installation scripts
-│   │   ├── main.sh           # Main setup orchestrator
-│   │   ├── docker/           # Docker & PostgreSQL setup
-│   │   ├── pentaho/          # Pentaho dependencies
-│   │   └── system/           # System tools (VSCode, Docker, etc.)
-│   ├── manage/               # Management utilities
-│   │   ├── postgres.sh       # PostgreSQL operations
-│   │   └── portainer.sh      # Portainer management
-│   ├── docs/                 # Documentation
-│   ├── resources/            # Package files and configs
-│   └── utils/                # Utility scripts
+├── lib/                      # Shared utilities
+│   └── common.sh             # Common functions, logging, validation
 │
-├── pentaho/                   # Pentaho platform (under development)
-│   ├── server/               # Pentaho Server installation
-│   └── pdi/                  # PDI Client installation
+├── dev-environment/          # Development environment setup
+│   ├── setup/                # Installation scripts
+│   │   ├── main.sh          # Main setup orchestrator
+│   │   ├── system/          # System-level installers
+│   │   │   ├── install-java.sh       # Java 21 (OpenJDK)
+│   │   │   ├── install-docker.sh     # Docker & Docker Compose
+│   │   │   ├── install-dev-tools.sh  # Build essentials, git, curl
+│   │   │   └── ...          # VSCode, GitHub CLI, environment config
+│   │   ├── docker/          # Docker & PostgreSQL setup
+│   │   └── pentaho/         # Pentaho dependencies (libwebkit)
+│   ├── manage/              # Management utilities
+│   │   ├── postgres.sh      # PostgreSQL operations
+│   │   └── portainer.sh     # Portainer management
+│   ├── docs/                # Documentation
+│   ├── resources/           # Package files and configs
+│   └── utils/               # Utility scripts
 │
-├── data-platform/            # Big data components (under development)
-│   ├── hadoop/               # Hadoop HDFS & YARN
-│   └── spark/                # Apache Spark
+├── pentaho/                 # Pentaho platform (under development)
+│   ├── server/              # Pentaho Server installation
+│   └── pdi/                 # PDI Client installation
 │
-├── ael/                      # AEL Spark execution (being rebuilt)
-│   ├── [Old scripts]         # Original ael-automation files
-│   └── README.md             # New modular design documentation
+├── data-platform/           # Big data components (under development)
+│   ├── hadoop/              # Hadoop HDFS & YARN
+│   └── spark/               # Apache Spark
 │
-├── workflows/                # End-to-end orchestrators (coming soon)
-│   └── README.md             # Workflow documentation
+├── ael/                     # AEL Spark execution (being rebuilt)
+│   ├── [Old scripts]        # Original ael-automation files
+│   └── README.md            # New modular design documentation
 │
-├── shared/                   # Shared utilities
-│   └── lib/
-│       └── common.sh         # Common functions, logging, validation
+├── workflows/               # End-to-end orchestrators (coming soon)
+│   └── README.md            # Workflow documentation
 │
-└── docs/                     # General documentation
-
+└── docs/                    # General documentation
 ```
 
 ## What's Inside
@@ -74,6 +76,7 @@ pentaho_toolkit/
 
 Tools for setting up a complete Pentaho development environment:
 
+- **Java 21** - OpenJDK automatically installed and configured
 - **Docker & Docker Compose** - Container runtime
 - **PostgreSQL** - With Pentaho databases pre-configured
   - Repository, Quartz, JCR, Logging, Data Mart schemas
@@ -81,7 +84,7 @@ Tools for setting up a complete Pentaho development environment:
 - **System Tools** - VSCode, GitHub CLI, dev utilities
 - **Pentaho Dependencies** - Libraries and packages required for PDI
 
-**Shared Library:** All dev-environment scripts now use `shared/lib/common.sh` for consistent logging, error handling, and validation.
+**Shared Library:** All scripts source `lib/common.sh` for consistent logging, error handling, and validation.
 
 📖 **[Full Dev Environment Documentation](dev-environment/DEV_README.md)**
 
