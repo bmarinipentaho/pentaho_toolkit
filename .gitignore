@@ -1,0 +1,62 @@
+# .gitignore for Pentaho Toolkit
+
+# Tarballs and downloads
+*.tar.gz
+*.tgz
+*.zip
+tarballs/
+downloads/
+
+# Deployment artifacts
+ael_deployment/
+**/pdi-spark-*.zip
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# Environment-specific
+.env
+*.local
+.vscode/settings.json
+
+# Java/Spark
+*.jar.bak
+metastore_db/
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# PostgreSQL data
+**/postgres-data/
+**/pgdata/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+Thumbs.db
+.Trash-*
+
+# Sensitive
+**/api_key*
+**/*password*
+**/*secret*
+credentials.txt
+
+# Build artifacts
+target/
+build/
+dist/

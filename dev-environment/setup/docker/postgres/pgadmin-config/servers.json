@@ -1,0 +1,59 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PostgreSQL (postgres)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "postgres",
+      "PassFile": "/tmp/pgpassfile",
+      "SSLMode": "prefer",
+      "Comment": "Main PostgreSQL Server"
+    },
+    "2": {
+      "Name": "Pentaho Repository (hibernate)",
+      "Group": "Pentaho Databases", 
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "hibernate",
+      "Username": "hibuser",
+      "PassFile": "/tmp/pgpassfile",
+      "SSLMode": "prefer",
+      "Comment": "Main Pentaho Repository Database"
+    },
+    "3": {
+      "Name": "Pentaho Quartz Scheduler",
+      "Group": "Pentaho Databases",
+      "Host": "postgres", 
+      "Port": 5432,
+      "MaintenanceDB": "quartz",
+      "Username": "pentaho_user",
+      "PassFile": "/tmp/pgpassfile", 
+      "SSLMode": "prefer",
+      "Comment": "Pentaho Scheduler Database"
+    },
+    "4": {
+      "Name": "Pentaho Jackrabbit Content",
+      "Group": "Pentaho Databases",
+      "Host": "postgres",
+      "Port": 5432, 
+      "MaintenanceDB": "jackrabbit",
+      "Username": "jcr_user",
+      "PassFile": "/tmp/pgpassfile",
+      "SSLMode": "prefer",
+      "Comment": "Pentaho Content Repository"
+    },
+    "5": {
+      "Name": "Data Type Showcase",
+      "Group": "Testing Databases",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "data_type_showcase",
+      "Username": "datatype_user",
+      "PassFile": "/tmp/pgpassfile",
+      "SSLMode": "prefer",
+      "Comment": "Comprehensive PostgreSQL Data Type Testing Database"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+# pgAdmin password file
+# Format: hostname:port:database:username:password
+postgres:5432:*:postgres:postgres
+postgres:5432:*:hibuser:password
+postgres:5432:*:pentaho_user:password
+postgres:5432:*:jcr_user:password
+postgres:5432:*:datatype_user:datatype_user
