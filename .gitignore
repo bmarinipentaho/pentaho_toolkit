@@ -1,5 +1,9 @@
 # .gitignore for Pentaho Toolkit
 
+# Personal notes
+NOTES.md
+notes.md
+
 # Tarballs and downloads
 *.tar.gz
 *.tar.bz2

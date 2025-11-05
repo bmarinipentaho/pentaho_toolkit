@@ -32,42 +32,43 @@ cd dev-environment
 
 ```
 pentaho_toolkit/
-├── lib/                      # Shared utilities
-│   └── common.sh             # Common functions, logging, validation
+├── lib/                                      # Shared utilities
+│   └── common.sh                             # Common functions, logging, validation
 │
-├── dev-environment/          # Development environment setup
-│   ├── setup/                # Installation scripts
-│   │   ├── main.sh          # Main setup orchestrator
-│   │   ├── system/          # System-level installers
-│   │   │   ├── install-java.sh       # Java 21 (OpenJDK)
-│   │   │   ├── install-docker.sh     # Docker & Docker Compose
-│   │   │   ├── install-dev-tools.sh  # Build essentials, git, curl
-│   │   │   └── ...          # VSCode, GitHub CLI, environment config
-│   │   ├── docker/          # Docker & PostgreSQL setup
-│   │   └── pentaho/         # Pentaho dependencies (libwebkit)
-│   ├── manage/              # Management utilities
-│   │   ├── postgres.sh      # PostgreSQL operations
-│   │   └── portainer.sh     # Portainer management
-│   ├── docs/                # Documentation
-│   ├── resources/           # Package files and configs
-│   └── utils/               # Utility scripts
+├── dev-environment/                          # Development environment setup
+│   ├── setup/                                # Installation scripts
+│   │   ├── main.sh                           # Main setup orchestrator
+│   │   ├── system/                           # System-level installers
+│   │   │   ├── install-java.sh               # Java 21 (OpenJDK)
+│   │   │   ├── install-docker.sh             # Docker & Docker Compose
+│   │   │   ├── install-dev-tools.sh          # Build essentials, git, curl
+│   │   │   └── ...                           # VSCode, GitHub CLI, environment config
+│   │   ├── docker/                           # Docker & PostgreSQL setup
+│   │   └── pentaho/                          # Pentaho dependencies (libwebkit)
+│   ├── manage/                               # Management utilities
+│   │   ├── postgres.sh                       # PostgreSQL operations
+│   │   └── portainer.sh                      # Portainer management
+│   ├── docs/                                 # Documentation
+│   ├── resources/                            # Package files and configs
+│   └── utils/                                # Utility scripts
 │
-├── pentaho/                 # Pentaho platform (under development)
-│   ├── server/              # Pentaho Server installation
-│   └── pdi/                 # PDI Client installation
+├── pentaho/                                  # Pentaho installation tools
+│   ├── pdi/                                  # PDI installer with license automation
+│   ├── cleanup.sh                            # Cleanup script for all Pentaho components
+│   └── README.md                             # Pentaho module documentation
 │
-├── data-platform/           # Big data components (under development)
-│   ├── hadoop/              # Hadoop HDFS & YARN
-│   └── spark/               # Apache Spark
+├── data-platform/                            # Big data components (under development)
+│   ├── hadoop/                               # Hadoop HDFS & YARN
+│   └── spark/                                # Apache Spark
 │
-├── ael/                     # AEL Spark execution (being rebuilt)
-│   ├── [Old scripts]        # Original ael-automation files
-│   └── README.md            # New modular design documentation
+├── ael/                                      # AEL Spark execution (being rebuilt)
+│   ├── [Old scripts]                         # Original ael-automation files
+│   └── README.md                             # New modular design documentation
 │
-├── workflows/               # End-to-end orchestrators (coming soon)
-│   └── README.md            # Workflow documentation
+├── workflows/                                # End-to-end orchestrators (coming soon)
+│   └── README.md                             # Workflow documentation
 │
-└── docs/                    # General documentation
+└── docs/                                     # General documentation
 ```
 
 ## What's Inside
@@ -92,12 +93,14 @@ Tools for setting up a complete Pentaho development environment:
 
 ### Pentaho Platform (`pentaho/`)
 
-PDI installation and cleanup tools:
+PDI installation and cleanup tools with automated license installation:
 
-- **PDI Installer** - Install from local zips with version-based directories
+- **PDI Installer** - Install from local zips with `{version}/{build}/pdi/` structure
+- **License Automation** - Automatic license installation from flexnet URL
 - **Cleanup Script** - Remove all PDI installations, caches, and temp files
-- **Parallel Installations** - Multiple PDI versions can coexist
-- **Pentaho Server** - Coming soon
+- **Parallel Installations** - Multiple versions and builds can coexist
+- **Project Profiles** - Support for centralized kettle properties and metastore
+- **Complete Extraction** - Includes data-integration, license-installer, jdbc-distribution
 
 📖 **[Pentaho Module Documentation](pentaho/README.md)**
 

@@ -4,13 +4,11 @@
 #
 # Installation modes:
 #   1. Local zip:        --zip-file /path/to/pdi.zip
-#   2. Version + build:  --version 10.2.0.0 --build 999
-#   3. Version + latest: --version 10.2.0.0 --latest
-#   4. List builds:      --list-builds --version 10.2.0.0
+#   2. Download build:   --version 11.0-QAT --build 203
 #
 # Features:
-#   - Parallel installations supported (version-based paths)
-#   - Automatic extraction and setup
+#   - Parallel installations supported (version/build/product structure)
+#   - Automatic extraction and license installation
 #   - Symbolic link to 'current' installation
 #   - Integration with lib/common.sh
 
@@ -36,7 +34,7 @@ fi
 # Configuration
 # ============================================================================
 
-PDI_INSTALL_BASE="${PDI_INSTALL_BASE:-$HOME/pentaho/pdi}"
+PENTAHO_BASE="${PENTAHO_BASE:-$HOME/pentaho}"
 BUILD_SITE_URL="https://build.orl.eng.hitachivantara.com/hosted"
 DEFAULT_VERSION="11.0-QAT"
 DEFAULT_EDITION="ee"  # ce or ee
@@ -59,7 +57,8 @@ INSTALLATION MODES:
   --edition EDITION         Edition: ce or ee (default: ee)
 
 OPTIONS:
-  --install-dir DIR         Custom installation directory (default: ~/pentaho/pdi)
+  --license-url URL         Install license from flexnet URL
+  --install-dir DIR         Custom installation directory (default: ~/pentaho/{version}/{build}/pdi)
   --no-symlink             Don't create 'current' symlink
   --force                  Overwrite existing installation
   -h, --help               Show this help message
@@ -67,6 +66,10 @@ OPTIONS:
 EXAMPLES:
   # Install from local zip (recommended)
   $(basename "$0") --zip-file ~/downloads/pdi-ee-client-11.0.0.0-203.zip
+
+  # Install with license
+  $(basename "$0") --zip-file ~/downloads/pdi-ee-client-11.0.0.0-203.zip \\
+    --license-url https://flex1826-uat.compliance.flexnetoperations.com/instances/YA6CTUK7XNAJ/request
 
   # Install from build site (requires correct URL pattern)
   $(basename "$0") --version 11.0-QAT --build 203
@@ -80,13 +83,15 @@ NOTE:
   Recommended approach: Download the zip manually, then use --zip-file.
 
 INSTALLATION PATHS:
-  Base directory:    $PDI_INSTALL_BASE
-  Version install:   $PDI_INSTALL_BASE/{version}-{build}
-  Current symlink:   $PDI_INSTALL_BASE/current -> {version}-{build}
+  Base directory:    $PENTAHO_BASE
+  Version/build:     $PENTAHO_BASE/{version}/{build}/
+  PDI install:       $PENTAHO_BASE/{version}/{build}/pdi/
+  Current symlink:   $PENTAHO_BASE/current -> {version}/{build}
 
 PARALLEL INSTALLATIONS:
-  Multiple PDI versions can be installed simultaneously.
-  Use the version-build path or the 'current' symlink.
+  Multiple versions and builds can be installed simultaneously.
+  All products for a version/build are grouped together.
+  Use the version/build path or the 'current' symlink.
 
 EOF
 }
@@ -157,49 +162,80 @@ install_pdi_from_zip() {
   # Create installation directory
   create_dir "$install_dir"
   
-  # Extract zip
-  # PDI zips typically extract to a 'data-integration' folder
-  local temp_dir
-  temp_dir=$(mktemp -d)
+  # Create project_profiles directory in pentaho base
+  create_dir "$PENTAHO_BASE/project_profiles"
   
-  if ! unzip -q "$zip_file" -d "$temp_dir"; then
-    rm -rf "$temp_dir"
+  # Extract entire zip file
+  # PDI EE zips contain:
+  #   - data-integration/    (main PDI installation)
+  #   - license-installer/   (license installation tools)
+  #   - jdbc-distribution/   (JDBC driver distribution tools)
+  log "Extracting all contents from zip..."
+  
+  if ! unzip -q "$zip_file" -d "$install_dir"; then
     die "Failed to extract zip file"
   fi
   
-  # Move contents from data-integration folder to install_dir
-  if [[ -d "$temp_dir/data-integration" ]]; then
-    mv "$temp_dir/data-integration"/* "$install_dir/"
-    rm -rf "$temp_dir"
-  else
-    # If no data-integration folder, move everything
-    mv "$temp_dir"/* "$install_dir/"
-    rm -rf "$temp_dir"
-  fi
-  
-  # Make scripts executable
-  chmod +x "$install_dir"/*.sh 2>/dev/null || true
+  # Make all shell scripts executable
+  find "$install_dir" -type f -name "*.sh" -exec chmod +x {} \;
   
   success "PDI installed to $install_dir"
   
+  # Show what was extracted
+  log "Extracted folders:"
+  find "$install_dir" -maxdepth 1 -type d -not -path "$install_dir" -exec basename {} \; | sed 's/^/  - /' || true
+  
   # Show version info if available
-  if [[ -f "$install_dir/version.xml" ]]; then
+  if [[ -f "$install_dir/data-integration/version.xml" ]]; then
     log "Version information:"
-    grep -E "<version>|<buildNumber>" "$install_dir/version.xml" | sed 's/^/  /' || true
+    grep -E "<version>|<buildNumber>" "$install_dir/data-integration/version.xml" | sed 's/^/  /' || true
   fi
+}
+
+# Install license using license-installer
+install_license() {
+  local install_dir="$1"
+  local license_url="$2"
+  
+  local license_installer="$install_dir/license-installer/install_license.sh"
+  
+  if [[ ! -f "$license_installer" ]]; then
+    warning "License installer not found at: $license_installer"
+    return 1
+  fi
+  
+  log "Installing license..."
+  log "License server: $license_url"
+  
+  # Run license installer from its directory
+  if ! (cd "$install_dir/license-installer" && ./install_license.sh "$license_url"); then
+    error "License installation failed"
+    return 1
+  fi
+  
+  success "License installed successfully"
 }
 
 # Create symlink to current installation
 create_current_symlink() {
   local install_dir="$1"
-  local symlink_path="$PDI_INSTALL_BASE/current"
+  local symlink_path="$PENTAHO_BASE/current"
+  
+  # install_dir is ~/pentaho/{version}/{build}/pdi
+  # We want symlink to point to ~/pentaho/{version}/{build}
+  local build_dir
+  build_dir=$(dirname "$install_dir")
   
   if [[ -L "$symlink_path" ]]; then
     rm "$symlink_path"
   fi
   
-  ln -s "$install_dir" "$symlink_path"
-  success "Created symlink: current -> $(basename "$install_dir")"
+  # Create relative symlink from base to version/build
+  local relative_path
+  relative_path=$(realpath --relative-to="$PENTAHO_BASE" "$build_dir")
+  
+  (cd "$PENTAHO_BASE" && ln -s "$relative_path" current)
+  success "Created symlink: current -> $relative_path"
 }
 
 # ============================================================================
@@ -212,6 +248,7 @@ main() {
   local build=""
   local edition="$DEFAULT_EDITION"
   local install_dir=""
+  local license_url=""
   local create_symlink=true
   local force=false
   
@@ -236,6 +273,10 @@ main() {
         ;;
       --edition)
         edition="$2"
+        shift 2
+        ;;
+      --license-url)
+        license_url="$2"
         shift 2
         ;;
       --install-dir)
@@ -286,28 +327,47 @@ main() {
       log "Mode: Local zip file"
       log "File: $zip_file"
       
-      # Extract version and build from filename if possible
+      # Extract edition and build from filename if possible
       # Pattern: pdi-ee-client-11.0.0.0-203.zip or pdi-ce-client-10.2.0.0-999.zip
+      # Note: We extract the build number but keep the version as-is (e.g., 11.0-QAT)
+      local file_version=""
       if [[ "$zip_file" =~ pdi-(ce|ee)-client-([0-9.]+)-([0-9]+) ]]; then
         edition="${BASH_REMATCH[1]}"
-        version="${BASH_REMATCH[2]}"
+        file_version="${BASH_REMATCH[2]}"
         build="${BASH_REMATCH[3]}"
-        log "Detected edition: $edition, version: $version, build: $build"
+        log "Detected edition: $edition, file version: $file_version, build: $build"
+        
+        # If version wasn't explicitly provided, use the default
+        if [[ "$version" == "$DEFAULT_VERSION" ]]; then
+          log "Using version: $version (override with --version if different)"
+        fi
       else
         warning "Could not detect version/build from filename"
-        version="unknown"
+        if [[ "$version" == "$DEFAULT_VERSION" ]]; then
+          version="unknown"
+        fi
         build=$(date +%s)
       fi
       
       if [[ -z "$install_dir" ]]; then
-        install_dir="$PDI_INSTALL_BASE/${version}-${build}"
+        install_dir="$PENTAHO_BASE/${version}/${build}/pdi"
       fi
       
-      if [[ -d "$install_dir" ]] && [[ "$force" != true ]]; then
-        die "Installation directory already exists: $install_dir (use --force to overwrite)"
+      if [[ -d "$install_dir" ]]; then
+        if [[ "$force" == true ]]; then
+          warning "Removing existing installation: $install_dir"
+          rm -rf "$install_dir"
+        else
+          die "Installation directory already exists: $install_dir (use --force to overwrite)"
+        fi
       fi
       
       install_pdi_from_zip "$zip_file" "$install_dir"
+      
+      # Install license if URL provided
+      if [[ -n "$license_url" ]]; then
+        install_license "$install_dir" "$license_url"
+      fi
       ;;
       
     download)
@@ -317,11 +377,16 @@ main() {
       log "Edition: $edition"
       
       if [[ -z "$install_dir" ]]; then
-        install_dir="$PDI_INSTALL_BASE/${version}-${build}"
+        install_dir="$PENTAHO_BASE/${version}/${build}/pdi"
       fi
       
-      if [[ -d "$install_dir" ]] && [[ "$force" != true ]]; then
-        die "Installation directory already exists: $install_dir (use --force to overwrite)"
+      if [[ -d "$install_dir" ]]; then
+        if [[ "$force" == true ]]; then
+          warning "Removing existing installation: $install_dir"
+          rm -rf "$install_dir"
+        else
+          die "Installation directory already exists: $install_dir (use --force to overwrite)"
+        fi
       fi
       
       local temp_zip
@@ -329,6 +394,11 @@ main() {
       
       download_pdi "$version" "$build" "$edition" "$temp_zip"
       install_pdi_from_zip "$temp_zip" "$install_dir"
+      
+      # Install license if URL provided
+      if [[ -n "$license_url" ]]; then
+        install_license "$install_dir" "$license_url"
+      fi
       
       rm "$temp_zip"
       ;;
@@ -345,17 +415,17 @@ main() {
   log ""
   log "Installation directory: $install_dir"
   if [[ "$create_symlink" == true ]]; then
-    log "Current symlink:        $PDI_INSTALL_BASE/current"
+    log "Current symlink:        $PENTAHO_BASE/current"
   fi
   log ""
   log "To use PDI:"
-  log "  cd $install_dir"
+  log "  cd $install_dir/data-integration"
   log "  ./spoon.sh              # Start Spoon (GUI)"
   log "  ./kitchen.sh --help     # Run jobs"
   log "  ./pan.sh --help         # Run transformations"
   log ""
   log "Environment variable suggestions:"
-  log "  export PDI_HOME=$install_dir"
+  log "  export PDI_HOME=$install_dir/data-integration"
   log "  export PATH=\$PATH:\$PDI_HOME"
 }
 
