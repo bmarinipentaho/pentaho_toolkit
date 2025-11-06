@@ -42,6 +42,9 @@ while [[ $# -gt 0 ]]; do
             echo "  5. Optional tools (VS Code, GitHub CLI)"
             echo "  6. PostgreSQL database with Pentaho schemas"
             echo "  7. Portainer for container management"
+            echo "  8. Data Platform (Hadoop & Spark)"
+            echo "  9. Minio S3 object storage"
+            echo "  10. Pentaho UI dependencies (optional)"
             exit 0
             ;;
         *)
@@ -60,6 +63,9 @@ echo "  • Java (OpenJDK 21)"
 echo "  • Docker and Docker Compose"
 echo "  • PostgreSQL database with pgAdmin web interface"
 echo "  • Portainer for Docker container management"
+echo "  • Hadoop 3.4.1 & Spark 4.0.0 data platform"
+echo "  • Minio S3-compatible object storage"
+echo "  • Optional: Pentaho UI dependencies"
 echo ""
 
 if [[ "$AUTO_CONFIRM" == true ]]; then
@@ -157,10 +163,46 @@ else
 fi
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# STEP 7: Pentaho UI Dependencies (Optional)
+# STEP 7: Data Platform (Hadoop & Spark) - Optional
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-header "STEP 7: Pentaho UI Dependencies (Optional)"
+header "STEP 7: Data Platform (Hadoop & Spark)"
+
+if [[ "$AUTO_CONFIRM" == true ]] || confirm "Install Hadoop and Spark for big data processing?" "Y"; then
+    log "Installing Hadoop 3.4.1 and Spark 4.0.0..."
+    if "$TOOLKIT_ROOT/data-platform/install.sh" -y; then
+        success "Data platform installed successfully"
+    else
+        warning "Data platform installation had issues (optional component)"
+    fi
+else
+    log "Skipping data platform installation"
+    log "You can install later with: $TOOLKIT_ROOT/data-platform/install.sh"
+fi
+
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# STEP 8: Minio S3 Object Storage
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+header "STEP 8: Minio S3 Object Storage"
+
+if [[ "$AUTO_CONFIRM" == true ]] || confirm "Install Minio S3-compatible object storage?" "Y"; then
+    log "Setting up Minio S3 storage..."
+    if sg docker -c "$SCRIPT_DIR/manage/minio.sh start"; then
+        success "Minio setup completed"
+    else
+        warning "Minio setup may have issues (optional component)"
+    fi
+else
+    log "Skipping Minio installation"
+    log "You can install later with: $SCRIPT_DIR/manage/minio.sh start"
+fi
+
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# STEP 9: Pentaho UI Dependencies (Optional)
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+header "STEP 9: Pentaho UI Dependencies (Optional)"
 
 LIBWEBKIT_DIR="$SCRIPT_DIR/../resources/packages/libwebkit"
 if [[ -d "$LIBWEBKIT_DIR" ]] && ls "$LIBWEBKIT_DIR"/*.deb >/dev/null 2>&1; then
@@ -200,10 +242,21 @@ echo ""
 echo "🐳 Portainer Container Management"
 echo "  Web UI: https://localhost:9443"
 echo ""
+echo "📦 Minio S3 Object Storage"
+echo "  Console: http://localhost:9001"
+echo "  S3 API: http://localhost:9000"
+echo "  Login: admin"
+echo "  Password: password123"
+echo "  Buckets: pentaho, spark-logs, ael-artifacts"
+echo ""
 echo "🛠️  Management Commands"
 echo "  PostgreSQL: $SCRIPT_DIR/manage/postgres.sh [start|stop|status|logs|connect]"
-echo "  Portainer: $SCRIPT_DIR/manage/portainer.sh [start|stop|status|logs]"
+echo "  Minio:      $SCRIPT_DIR/manage/minio.sh [start|stop|status|logs|buckets]"
+echo "  Portainer:  $SCRIPT_DIR/manage/portainer.sh [start|stop|status|logs]"
 echo "  Java Version: $SCRIPT_DIR/utils/switch-java.sh [8|17|21]"
+if [[ -x "$TOOLKIT_ROOT/data-platform/install.sh" ]]; then
+    echo "  Data Platform: $TOOLKIT_ROOT/data-platform/install.sh [--hadoop-only|--spark-only]"
+fi
 echo ""
 echo "📚 Documentation"
 echo "  Project README: $SCRIPT_DIR/../README.md"

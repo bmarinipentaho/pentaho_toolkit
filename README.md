@@ -43,10 +43,13 @@ pentaho_toolkit/
 │   │   │   ├── install-docker.sh             # Docker & Docker Compose
 │   │   │   ├── install-dev-tools.sh          # Build essentials, git, curl
 │   │   │   └── ...                           # VSCode, GitHub CLI, environment config
-│   │   ├── docker/                           # Docker & PostgreSQL setup
+│   │   ├── docker/                           # Docker service configurations
+│   │   │   ├── postgres/                     # PostgreSQL + pgAdmin
+│   │   │   └── minio/                        # Minio S3 storage
 │   │   └── pentaho/                          # Pentaho dependencies (libwebkit)
 │   ├── manage/                               # Management utilities
 │   │   ├── postgres.sh                       # PostgreSQL operations
+│   │   ├── minio.sh                          # Minio S3 storage operations
 │   │   └── portainer.sh                      # Portainer management
 │   ├── docs/                                 # Documentation
 │   ├── resources/                            # Package files and configs
@@ -57,9 +60,14 @@ pentaho_toolkit/
 │   ├── cleanup.sh                            # Cleanup script for all Pentaho components
 │   └── README.md                             # Pentaho module documentation
 │
-├── data-platform/                            # Big data components (under development)
+├── data-platform/                            # Big data components
+│   ├── install.sh                            # Master installer for Hadoop + Spark
+│   ├── cleanup.sh                            # Remove all data platform installations
 │   ├── hadoop/                               # Hadoop HDFS & YARN
-│   └── spark/                                # Apache Spark
+│   │   └── install-hadoop.sh                 # Hadoop 3.4.1 installer
+│   ├── spark/                                # Apache Spark
+│   │   └── install-spark.sh                  # Spark 4.0.0 installer
+│   └── README.md                             # Data platform documentation
 │
 ├── ael/                                      # AEL Spark execution (being rebuilt)
 │   ├── [Old scripts]                         # Original ael-automation files
@@ -82,6 +90,8 @@ Tools for setting up a complete Pentaho development environment:
 - **PostgreSQL** - With Pentaho databases pre-configured
   - Repository, Quartz, JCR, Logging, Data Mart schemas
   - pgAdmin for database management
+- **Minio S3 Storage** - S3-compatible object storage for data and artifacts
+- **Portainer** - Docker container management UI
 - **System Tools** - VSCode, GitHub CLI, dev utilities
 - **Pentaho Dependencies** - Libraries and packages required for PDI
 
@@ -106,13 +116,22 @@ PDI installation and cleanup tools with automated license installation:
 
 ---
 
-### Data Platform (`data-platform/`) - Under Development
+### Data Platform (`data-platform/`)
 
-Big data infrastructure components:
+Big data infrastructure for AEL and distributed transformations:
 
-- **Hadoop 3.4.1+** - HDFS and YARN for distributed storage and processing
-- **Spark 4.0.0+** - Distributed computation engine
-- **Independent Modules** - Can be used standalone or with AEL
+- **Hadoop 3.4.1** - HDFS and YARN for distributed storage and processing
+- **Spark 4.0.0** - Distributed computation engine with AEL support
+- **Version Management** - Multiple parallel installations supported
+- **Master Installer** - One command to install both components
+- **Cleanup Script** - Remove all installations, data, and temp files
+- **Native Installation** - Optimized for performance (not containerized)
+
+**Key Features:**
+- Downloads from Apache archives (stable, historical versions)
+- Smart version detection for Spark 3.x vs 4.x naming
+- Symlinks for easy version switching
+- Integrated with main dev environment setup
 
 📖 **[Data Platform Documentation](data-platform/README.md)**
 
@@ -159,36 +178,37 @@ Common utilities used across all modules:
 ```bash
 cd dev-environment/setup
 ./main.sh
-# Installs Docker, PostgreSQL, VSCode, and development tools
+# Installs Docker, PostgreSQL, Minio, Hadoop, Spark, VSCode, and dev tools
 ```
 
-### 2. Installing Pentaho Platform (Coming Soon)
+### 2. Installing Just the Data Platform
 ```bash
-cd workflows
-./setup-basic-pentaho.sh
-# PostgreSQL + Pentaho Server + PDI Client + Configurations
+cd data-platform
+./install.sh
+# Installs Hadoop 3.4.1 and Spark 4.0.0
 ```
 
-### 3. Complete AEL Environment (Coming Soon)
-```bash
-cd workflows
-./setup-ael-environment.sh --mode local
-# Everything needed for AEL testing
-```
-
-### 4. Database Management
+### 3. Database Management
 ```bash
 cd dev-environment/manage
 ./postgres.sh start
-# Access pgAdmin at http://localhost:5050
+# Access pgAdmin at http://localhost:8888
 ```
 
-### 5. Modular Component Installation (Coming Soon)
+### 4. S3 Storage Management
 ```bash
-# Install just what you need
-cd data-platform/hadoop && ./install.sh
-cd data-platform/spark && ./install.sh
-cd ael && ./install.sh
+cd dev-environment/manage
+./minio.sh start
+# Access Minio console at http://localhost:9001
+./minio.sh buckets  # List buckets
+```
+
+### 5. Installing Pentaho PDI
+```bash
+cd pentaho/pdi
+./install-pdi.sh /path/to/pdi-9.4.0.0-343.zip
+# Or with license automation:
+./install-pdi.sh /path/to/pdi.zip --license-url "https://flexnet.example.com/licenses"
 ```
 
 ## Target Environment
@@ -251,29 +271,37 @@ sudo lsof -i :8080
 
 ## Roadmap
 
-### Phase 1: Dev Environment (In Progress) ✅
+### Phase 1: Dev Environment ✅
 - [x] Consolidate repositories into unified structure
 - [x] Migrate all scripts to shared logging library
 - [x] Remove redundant code and improve error handling
 - [x] Create modular directory structure
+- [x] PostgreSQL with Pentaho schemas
+- [x] Minio S3 object storage
+- [x] Portainer container management
 
-### Phase 2: Basic Pentaho (Next)
-- [ ] Pentaho Server installation scripts
-- [ ] PDI Client installation and configuration
-- [ ] PostgreSQL integration and repository setup
-- [ ] Basic workflow orchestrator
+### Phase 2: Data Platform ✅
+- [x] Hadoop 3.4.1 installer
+- [x] Spark 4.0.0 installer (archive.apache.org support)
+- [x] Master installer for both components
+- [x] Cleanup script for installations
+- [x] Integration with dev environment setup
+- [x] Comprehensive documentation
 
-### Phase 3: Data Platform
-- [ ] Extract Hadoop setup from old AEL scripts
-- [ ] Extract Spark setup from old AEL scripts
-- [ ] Create independent, reusable modules
-- [ ] Add comprehensive validation and verification
+### Phase 3: Pentaho Platform ✅
+- [x] PDI installation with license automation
+- [x] Support for version/build directory structure
+- [x] Project profiles and metastore support
+- [x] Cleanup scripts
+- [ ] Pentaho Server installation (planned)
+- [ ] Server configuration automation (planned)
 
-### Phase 4: AEL Rebuild
+### Phase 4: AEL Rebuild (Next)
 - [ ] Rebuild AEL addon installer with modern practices
 - [ ] Configuration management improvements
 - [ ] Local and YARN mode support
-- [ ] Integration with modular components
+- [ ] Integration with modular data platform
+- [ ] Validation and verification scripts
 
 ### Phase 5: Testing & Documentation
 - [ ] Automated smoke tests for each module

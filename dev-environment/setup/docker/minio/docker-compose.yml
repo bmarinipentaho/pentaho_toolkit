@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Minio S3-compatible Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: pentaho-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-password123}
+      # Enable virtual-host-style requests for S3 compatibility
+      MINIO_DOMAIN: ${MINIO_DOMAIN:-localhost}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"      # S3 API endpoint
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"  # Web console
+    networks:
+      - minio-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Minio Client (mc) - for bucket initialization
+  minio-client:
+    image: minio/mc:latest
+    container_name: pentaho-minio-client
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      set -e;
+      echo 'Waiting for Minio to be ready...';
+      sleep 5;
+      echo 'Configuring mc alias...';
+      mc alias set pentaho-minio http://minio:9000 ${MINIO_ROOT_USER:-admin} ${MINIO_ROOT_PASSWORD:-password123};
+      echo 'Creating buckets...';
+      mc mb --ignore-existing pentaho-minio/pentaho;
+      mc mb --ignore-existing pentaho-minio/spark-logs;
+      mc mb --ignore-existing pentaho-minio/ael-artifacts;
+      echo 'Setting bucket policies to public read...';
+      mc anonymous set download pentaho-minio/pentaho;
+      mc anonymous set download pentaho-minio/spark-logs;
+      mc anonymous set download pentaho-minio/ael-artifacts;
+      echo 'Minio initialization complete!';
+      "
+    networks:
+      - minio-net
+
+volumes:
+  minio_data:
+    driver: local
+
+networks:
+  minio-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16
