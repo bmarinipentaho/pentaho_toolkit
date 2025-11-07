@@ -86,6 +86,10 @@ INSTALLATION:
     Server installs to: ~/pentaho/{version}/{build}/server/pentaho-server/
     Symlink created:    ~/pentaho/{version}/{build}/server-current
     
+    Plugin installation:
+    - Standard plugins → pentaho-solutions/system/
+    - Operations mart (PIR) → data/
+    
     Automatically configures:
     - PostgreSQL repository (hibernate, quartz, jackrabbit)
     - License installation
@@ -197,7 +201,9 @@ install_server() {
 # Install plugins
 install_plugins() {
     local plugins_dir="$1"
-    local server_system="$PENTAHO_BASE/$VERSION/$BUILD/server/pentaho-server/pentaho-solutions/system"
+    local server_base="$PENTAHO_BASE/$VERSION/$BUILD/server/pentaho-server"
+    local server_system="$server_base/pentaho-solutions/system"
+    local server_data="$server_base/data"
     local count=0
     
     if [[ ! -d "$server_system" ]]; then
@@ -205,7 +211,7 @@ install_plugins() {
         return 0
     fi
     
-    log "Installing plugins to: $server_system"
+    log "Installing plugins..."
     
     for plugin_zip in "$plugins_dir"/*.zip; do
         [[ -f "$plugin_zip" ]] || continue
@@ -213,12 +219,26 @@ install_plugins() {
         local plugin_name=$(basename "$plugin_zip" .zip)
         log "Installing plugin: $plugin_name"
         
-        # Extract plugin directly to system directory
-        if unzip -q "$plugin_zip" -d "$server_system" 2>/dev/null; then
-            ((count++))
-            success "Installed: $plugin_name"
+        # Check if this is the operations mart (goes to data/ instead of system/)
+        if [[ "$plugin_name" =~ operations-mart|pir-plugin ]]; then
+            if [[ ! -d "$server_data" ]]; then
+                create_dir "$server_data"
+            fi
+            
+            if unzip -q "$plugin_zip" -d "$server_data" 2>/dev/null; then
+                ((count++))
+                success "Installed to data/: $plugin_name"
+            else
+                warning "Failed to install plugin: $plugin_name"
+            fi
         else
-            warning "Failed to install plugin: $plugin_name"
+            # Standard plugin - extract to system directory
+            if unzip -q "$plugin_zip" -d "$server_system" 2>/dev/null; then
+                ((count++))
+                success "Installed to system/: $plugin_name"
+            else
+                warning "Failed to install plugin: $plugin_name"
+            fi
         fi
     done
     
