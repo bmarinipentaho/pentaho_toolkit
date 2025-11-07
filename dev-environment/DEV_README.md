@@ -164,6 +164,23 @@ export KRB5_CONFIG=/etc/krb5.conf
 
 ## Troubleshooting
 
+### Accessing Web UIs from Host Machine
+
+If running in a VM and want to access web consoles from your host machine (Windows/Mac):
+
+**VirtualBox Port Forwarding:**
+1. VM Settings → Network → Adapter 1 → Advanced → Port Forwarding
+2. Add rules:
+   - **pgAdmin:** Host Port 8888 → Guest Port 8888
+   - **Minio Console:** Host Port 9001 → Guest Port 9001
+   - **Minio API:** Host Port 9000 → Guest Port 9000
+   - **Portainer:** Host Port 9443 → Guest Port 9443
+   - **PostgreSQL:** Host Port 5432 → Guest Port 5432 (optional)
+
+Then access from host browser using `http://localhost:8888`, etc.
+
+**Note:** PDI running inside the VM uses localhost connections - no special config needed.
+
 ### Docker permission denied
 
 ```bash

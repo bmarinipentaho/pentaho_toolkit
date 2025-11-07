@@ -257,6 +257,22 @@ docker run --rm -v pentaho-minio_minio_data:/data -v $(pwd):/backup \
 
 ## External Access
 
+### Access from Host Machine (Recommended)
+
+If running PDI **inside the VM** but want web console access from your host machine (Windows/Mac):
+
+**VirtualBox:** Add port forwarding rules:
+- **Settings → Network → Adapter 1 → Advanced → Port Forwarding**
+- Add rules for ports 9000 (S3 API) and 9001 (Console)
+
+Then access from host browser:
+- **Console:** http://localhost:9001
+- **S3 API:** http://localhost:9000
+
+**PDI inside VM** uses localhost connections (no special config needed).
+
+### Access from Other Network Machines
+
 To access from other machines on your network:
 
 1. Find your VM/host IP:
