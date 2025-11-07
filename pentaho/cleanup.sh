@@ -35,6 +35,7 @@ fi
 # ============================================================================
 
 PDI_INSTALL_BASE="${PDI_INSTALL_BASE:-$HOME/pentaho/pdi}"
+SERVER_INSTALL_BASE="${SERVER_INSTALL_BASE:-$HOME/pentaho}"
 DRY_RUN=false
 AUTO_CONFIRM=false
 
@@ -46,6 +47,9 @@ AUTO_CONFIRM=false
 declare -a CLEANUP_DIRS=(
   # PDI installations
   "$PDI_INSTALL_BASE"
+  
+  # Server installations (will be filtered for server subdirectories)
+  # Added dynamically based on options
   
   # Hidden Pentaho directories
   "$HOME/.pentaho"
@@ -88,6 +92,7 @@ USAGE:
 OPTIONS:
   --dry-run                 Show what would be deleted without deleting
   --pdi-only               Only remove PDI installations (keep configs/caches)
+  --server-only            Only remove Server installations
   --caches-only            Only remove caches and temp files
   --all                    Remove everything (default)
   --keep-logs              Don't delete log files
@@ -97,6 +102,9 @@ OPTIONS:
 CLEANUP TARGETS:
   PDI Installations:
     - $PDI_INSTALL_BASE
+
+  Server Installations:
+    - ~/pentaho/*/*/server/ (all server installations)
 
   Configuration & Hidden Folders:
     - ~/.pentaho
@@ -121,6 +129,9 @@ EXAMPLES:
 
   # Remove only PDI installations
   $(basename "$0") --pdi-only
+
+  # Remove only Server installations
+  $(basename "$0") --server-only
 
   # Clean everything except logs
   $(basename "$0") --keep-logs
@@ -277,6 +288,16 @@ perform_cleanup() {
       remove_directory "$PDI_INSTALL_BASE"
       ;;
       
+    server-only)
+      log "Mode: Server installations only"
+      # Find and remove all server installations
+      if [[ -d "$SERVER_INSTALL_BASE" ]]; then
+        find "$SERVER_INSTALL_BASE" -type d -path "*/*/server" 2>/dev/null | while read -r server_dir; do
+          remove_directory "$server_dir"
+        done
+      fi
+      ;;
+      
     caches-only)
       log "Mode: Caches and temp files only"
       remove_directory "$HOME/.pentaho/cache"
@@ -304,6 +325,13 @@ perform_cleanup() {
         
         remove_directory "$dir"
       done
+      
+      # Remove all server installations
+      if [[ -d "$SERVER_INSTALL_BASE" ]]; then
+        find "$SERVER_INSTALL_BASE" -type d -path "*/*/server" 2>/dev/null | while read -r server_dir; do
+          remove_directory "$server_dir"
+        done
+      fi
       
       for pattern in "${CLEANUP_PATTERNS[@]}"; do
         if [[ "$keep_logs" == true ]] && [[ "$pattern" == *".log"* ]]; then
@@ -361,6 +389,10 @@ main() {
         ;;
       --pdi-only)
         cleanup_mode="pdi-only"
+        shift
+        ;;
+      --server-only)
+        cleanup_mode="server-only"
         shift
         ;;
       --caches-only)
