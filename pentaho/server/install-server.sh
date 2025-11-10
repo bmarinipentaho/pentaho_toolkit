@@ -15,11 +15,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Source shared library
+# Source shared libraries
 if [[ -f "$TOOLKIT_ROOT/lib/common.sh" ]]; then
     source "$TOOLKIT_ROOT/lib/common.sh"
 else
     echo "ERROR: Cannot find lib/common.sh" >&2
+    exit 1
+fi
+
+if [[ -f "$SCRIPT_DIR/lib/install-plugins.sh" ]]; then
+    source "$SCRIPT_DIR/lib/install-plugins.sh"
+else
+    echo "ERROR: Cannot find lib/install-plugins.sh" >&2
     exit 1
 fi
 
@@ -185,8 +192,8 @@ install_server() {
     create_dir "$install_base"
     
     # Extract server
-    log "Extracting server files..."
-    unzip -q "$server_zip" -d "$install_base" || die "Failed to extract server zip"
+    log "Extracting server files (this may take a few minutes)..."
+    unzip -qo "$server_zip" -d "$install_base" < /dev/null || die "Failed to extract server zip"
     
     success "Server extracted to $install_base"
     
@@ -198,55 +205,18 @@ install_server() {
     return 0
 }
 
-# Install plugins
+# Install plugins wrapper
 install_plugins() {
     local plugins_dir="$1"
     local server_base="$PENTAHO_BASE/$VERSION/$BUILD/server/pentaho-server"
-    local server_system="$server_base/pentaho-solutions/system"
-    local server_data="$server_base/data"
-    local count=0
     
-    if [[ ! -d "$server_system" ]]; then
+    if [[ ! -d "$server_base/pentaho-solutions/system" ]]; then
         warning "Server system directory not found, skipping plugins"
         return 0
     fi
     
-    log "Installing plugins..."
-    
-    for plugin_zip in "$plugins_dir"/*.zip; do
-        [[ -f "$plugin_zip" ]] || continue
-        
-        local plugin_name=$(basename "$plugin_zip" .zip)
-        log "Installing plugin: $plugin_name"
-        
-        # Check if this is the operations mart (goes to data/ instead of system/)
-        if [[ "$plugin_name" =~ operations-mart|pir-plugin ]]; then
-            if [[ ! -d "$server_data" ]]; then
-                create_dir "$server_data"
-            fi
-            
-            if unzip -q "$plugin_zip" -d "$server_data" 2>/dev/null; then
-                ((count++))
-                success "Installed to data/: $plugin_name"
-            else
-                warning "Failed to install plugin: $plugin_name"
-            fi
-        else
-            # Standard plugin - extract to system directory
-            if unzip -q "$plugin_zip" -d "$server_system" 2>/dev/null; then
-                ((count++))
-                success "Installed to system/: $plugin_name"
-            else
-                warning "Failed to install plugin: $plugin_name"
-            fi
-        fi
-    done
-    
-    if [[ $count -gt 0 ]]; then
-        success "Installed $count plugin(s)"
-    else
-        warning "No plugins installed"
-    fi
+    # Use library function for plugin installation
+    install_plugins_from_directory "$plugins_dir" "$server_base" "$VERSION" "$BUILD"
 }
 
 # Configure PostgreSQL repository

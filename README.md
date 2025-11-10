@@ -15,6 +15,7 @@ cd pentaho_toolkit
 # Or install components individually:
 ./data-platform/install.sh              # Hadoop 3.4.1 + Spark 4.0.0
 ./pentaho/pdi/install-pdi.sh <zip>      # PDI with license automation
+./pentaho/server/install-server.sh      # Server with auto-plugin discovery
 ./dev-environment/manage/postgres.sh start   # PostgreSQL + pgAdmin
 ./dev-environment/manage/minio.sh start      # S3 storage
 ```
@@ -43,6 +44,7 @@ Native installations for big data processing:
 
 ### 🔧 Pentaho Components
 - **PDI Installer** - Support for `{version}/{build}/pdi/` directory structure
+- **Server Installer** - Auto-discovery of server + plugins, version validation, PostgreSQL config
 - **License Automation** - Auto-install licenses from flexnet URLs
 - **Project Profiles** - Centralized kettle.properties and metastore
 - **Cleanup Scripts** - Remove installations, caches, temp files
@@ -69,8 +71,12 @@ pentaho_toolkit/
 │   ├── hadoop/install-hadoop.sh              # Hadoop 3.4.1
 │   └── spark/install-spark.sh                # Spark 4.0.0
 │
-├── pentaho/                                  # PDI installation
-│   └── pdi/install-pdi.sh                    # PDI installer with license automation
+├── pentaho/                                  # Pentaho components
+│   ├── pdi/install-pdi.sh                    # PDI installer with license automation
+│   ├── server/install-server.sh              # Server installer with plugin discovery
+│   ├── server/configure-server.sh            # PostgreSQL configuration
+│   ├── server/manage-server.sh               # Server lifecycle (start/stop/status)
+│   └── cleanup.sh                            # Remove all Pentaho installations
 │
 └── ael/                                      # AEL (being rebuilt)
 ```
@@ -82,15 +88,18 @@ pentaho_toolkit/
 ./dev-environment/manage/postgres.sh [start|stop|status|logs|connect]
 ./dev-environment/manage/minio.sh [start|stop|status|buckets]
 ./dev-environment/manage/portainer.sh [start|stop|status]
+./pentaho/server/manage-server.sh [start|stop|restart|status|logs|karaf|clean]
 
 # Cleanup
-./data-platform/cleanup.sh              # Remove Hadoop/Spark
-./pentaho/cleanup.sh                    # Remove PDI installations
+./data-platform/cleanup.sh                    # Remove Hadoop/Spark
+./pentaho/cleanup.sh [--pdi-only|--server-only|--all]  # Remove Pentaho installations
 
 # Installation paths
 ~/data-platform/installs/hadoop-current -> hadoop-3.4.1/
 ~/data-platform/installs/spark-current  -> spark-4.0.0/
 ~/pentaho/{version}/{build}/pdi/data-integration/
+~/pentaho/{version}/{build}/server/pentaho-server/
+~/pentaho/{version}/{build}/server-current -> pentaho-server/
 ```
 
 ## Documentation
@@ -133,8 +142,8 @@ sudo lsof -i :8080
 | Dev Environment | ✅ Complete | PostgreSQL, Minio, Docker, Java |
 | Data Platform | ✅ Complete | Hadoop 3.4.1, Spark 4.0.0 |
 | PDI Installer | ✅ Complete | License automation, profiles |
+| Server Installer | ✅ Complete | Plugin discovery, version validation, management |
 | AEL | 🔄 In Progress | Rebuilding with modular design |
-| Pentaho Server | 📋 Planned | - |
 
 ## Origin
 
