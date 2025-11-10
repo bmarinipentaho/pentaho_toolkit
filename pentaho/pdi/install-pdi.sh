@@ -21,12 +21,20 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLKIT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Source shared library
+# Source shared libraries
 # shellcheck source=../../lib/common.sh
 if [[ -f "$TOOLKIT_ROOT/lib/common.sh" ]]; then
   source "$TOOLKIT_ROOT/lib/common.sh"
 else
   echo "ERROR: Cannot find lib/common.sh at $TOOLKIT_ROOT/lib/common.sh" >&2
+  exit 1
+fi
+
+# shellcheck source=../../lib/license-installer.sh
+if [[ -f "$TOOLKIT_ROOT/lib/license-installer.sh" ]]; then
+  source "$TOOLKIT_ROOT/lib/license-installer.sh"
+else
+  error "Cannot find lib/license-installer.sh"
   exit 1
 fi
 
@@ -192,28 +200,12 @@ install_pdi_from_zip() {
   fi
 }
 
-# Install license using license-installer
+# Install license using shared library
 install_license() {
   local install_dir="$1"
   local license_url="$2"
   
-  local license_installer="$install_dir/license-installer/install_license.sh"
-  
-  if [[ ! -f "$license_installer" ]]; then
-    warning "License installer not found at: $license_installer"
-    return 1
-  fi
-  
-  log "Installing license..."
-  log "License server: $license_url"
-  
-  # Run license installer from its directory
-  if ! (cd "$install_dir/license-installer" && ./install_license.sh "$license_url"); then
-    error "License installation failed"
-    return 1
-  fi
-  
-  success "License installed successfully"
+  install_pentaho_license "$install_dir" "$license_url"
 }
 
 # Create symlink to current installation

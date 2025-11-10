@@ -30,6 +30,13 @@ else
     exit 1
 fi
 
+if [[ -f "$TOOLKIT_ROOT/lib/license-installer.sh" ]]; then
+    source "$TOOLKIT_ROOT/lib/license-installer.sh"
+else
+    echo "ERROR: Cannot find lib/license-installer.sh" >&2
+    exit 1
+fi
+
 # ============================================================================
 # Configuration
 # ============================================================================
@@ -39,6 +46,7 @@ DEFAULT_POSTGRES_HOST="${POSTGRES_HOST:-localhost}"
 DEFAULT_POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 AUTO_CONFIRM=false
 FORCE_INSTALL=false
+START_SERVER=false
 LICENSE_URL=""
 
 # ============================================================================
@@ -64,6 +72,7 @@ OPTIONS:
     --license-url URL     Flexnet license download URL
     --postgres-host HOST  PostgreSQL host (default: localhost)
     --postgres-port PORT  PostgreSQL port (default: 5432)
+    --start              Start server after successful installation
     --force              Reinstall even if version exists
     -y, --yes            Auto-confirm all prompts
     -h, --help           Show this help message
@@ -154,9 +163,11 @@ extract_version_info() {
     local basename=$(basename "$filename" .zip)
     
     # Pattern: pentaho-server-ee-11.0.0.0-204
-    if [[ "$basename" =~ pentaho-server(-ee)?-([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)-([0-9]+) ]]; then
-        VERSION="${BASH_REMATCH[2]}"
-        BUILD="${BASH_REMATCH[3]}"
+    if [[ "$basename" =~ pentaho-server(-ee)?-([0-9]+\.[0-9]+)\.([0-9]+\.[0-9]+)-([0-9]+) ]]; then
+        # Convert 11.0.0.0 to 11.0-QAT format (match PDI structure)
+        local major_minor="${BASH_REMATCH[2]}"  # 11.0
+        VERSION="${major_minor}-QAT"
+        BUILD="${BASH_REMATCH[4]}"
         return 0
     fi
     
@@ -168,19 +179,45 @@ extract_version_info() {
 install_server() {
     local server_zip="$1"
     local install_base="$PENTAHO_BASE/$VERSION/$BUILD/server"
+    local server_path="$install_base/pentaho-server"
     
-    if [[ -d "$install_base/pentaho-server" ]] && [[ "$FORCE_INSTALL" == false ]]; then
-        warning "Server $VERSION build $BUILD already installed at:"
-        echo "  $install_base/pentaho-server"
-        echo ""
-        if [[ "$AUTO_CONFIRM" == false ]]; then
-            if ! confirm "Reinstall?" "N"; then
-                log "Installation cancelled"
-                exit 0
+    # Check if server exists and is running
+    if [[ -d "$server_path" ]]; then
+        # Source server utilities if available
+        if [[ -f "$SCRIPT_DIR/lib/server-utils.sh" ]]; then
+            source "$SCRIPT_DIR/lib/server-utils.sh"
+            
+            if is_server_running "$server_path"; then
+                warning "Server $VERSION build $BUILD is currently running!"
+                log ""
+                if [[ "$AUTO_CONFIRM" == false ]]; then
+                    if ! confirm "Stop server and continue with installation?" "N"; then
+                        log "Installation cancelled"
+                        exit 0
+                    fi
+                else
+                    log "Auto-stopping running server..."
+                fi
+                
+                stop_server_gracefully "$server_path" 30 || die "Failed to stop server"
+                log ""
             fi
-        else
-            log "Skipping installation (use --force to reinstall)"
-            return 0
+        fi
+        
+        # Check if we should reinstall
+        if [[ "$FORCE_INSTALL" == false ]]; then
+            warning "Server $VERSION build $BUILD already installed at:"
+            echo "  $server_path"
+            echo ""
+            if [[ "$AUTO_CONFIRM" == false ]]; then
+                if ! confirm "Reinstall?" "N"; then
+                    log "Installation cancelled"
+                    exit 0
+                fi
+            else
+                log "Skipping installation (use --force to reinstall)"
+                return 0
+            fi
         fi
     fi
     
@@ -243,36 +280,12 @@ configure_postgresql() {
 install_license() {
     local license_url="$1"
     local server_base="$PENTAHO_BASE/$VERSION/$BUILD/server/pentaho-server"
-    local license_installer="$server_base/license-installer"
     
     if [[ -z "$license_url" ]]; then
         return 0
     fi
     
-    if [[ ! -d "$license_installer" ]]; then
-        warning "License installer not found, skipping license installation"
-        return 0
-    fi
-    
-    log "Installing license from: $license_url"
-    
-    # Download license
-    local temp_license=$(mktemp /tmp/pentaho-license.XXXXXX.lic)
-    if ! curl -sSL "$license_url" -o "$temp_license"; then
-        warning "Failed to download license"
-        rm -f "$temp_license"
-        return 1
-    fi
-    
-    # Run license installer
-    cd "$license_installer"
-    if ./install_license.sh install "$temp_license" 2>&1 | grep -q "successfully"; then
-        success "License installed successfully"
-    else
-        warning "License installation may have failed"
-    fi
-    
-    rm -f "$temp_license"
+    install_pentaho_license "$server_base" "$license_url"
 }
 
 # Create server-current symlink
@@ -313,6 +326,10 @@ main() {
             --postgres-port)
                 DEFAULT_POSTGRES_PORT="$2"
                 shift 2
+                ;;
+            --start)
+                START_SERVER=true
+                shift
                 ;;
             --force)
                 FORCE_INSTALL=true
@@ -418,6 +435,28 @@ main() {
         install_license "$LICENSE_URL"
     fi
     
+    # Start server if requested
+    if [[ "$START_SERVER" == true ]]; then
+        header "Starting Server"
+        local server_path="$PENTAHO_BASE/$VERSION/$BUILD/server/pentaho-server"
+        local manage_script="$SCRIPT_DIR/manage-server.sh"
+        
+        if [[ -x "$manage_script" ]]; then
+            log "Starting Pentaho Server..."
+            if "$manage_script" start "$server_path"; then
+                success "Server started successfully!"
+                log ""
+                log "Access the server at: http://localhost:8080/pentaho"
+                log "Default credentials: admin / password"
+            else
+                warning "Server start failed - please start manually"
+            fi
+        else
+            warning "Cannot find manage-server.sh - start manually with:"
+            log "  $server_path/start-pentaho.sh"
+        fi
+    fi
+    
     # Installation complete
     header "✅ Installation Complete"
     echo ""
@@ -427,11 +466,14 @@ main() {
     echo "Symlink:"
     echo "  $PENTAHO_BASE/$VERSION/$BUILD/server-current"
     echo ""
-    echo "Next Steps:"
-    echo "  1. Configure PostgreSQL repository (if not auto-configured)"
-    echo "  2. Start server: $PENTAHO_BASE/$VERSION/$BUILD/server/pentaho-server/start-pentaho.sh"
-    echo "  3. Access: http://localhost:8080/pentaho"
-    echo ""
+    
+    if [[ "$START_SERVER" != true ]]; then
+        echo "Next Steps:"
+        echo "  1. Configure PostgreSQL repository (if not auto-configured)"
+        echo "  2. Start server: $PENTAHO_BASE/$VERSION/$BUILD/server/pentaho-server/start-pentaho.sh"
+        echo "  3. Access: http://localhost:8080/pentaho"
+        echo ""
+    fi
     
     success "Server installation complete! 🎉"
 }

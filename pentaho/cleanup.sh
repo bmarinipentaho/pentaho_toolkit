@@ -30,6 +30,11 @@ else
   exit 1
 fi
 
+# Source server utilities for stopping running servers
+if [[ -f "$SCRIPT_DIR/server/lib/server-utils.sh" ]]; then
+  source "$SCRIPT_DIR/server/lib/server-utils.sh"
+fi
+
 # ============================================================================
 # Configuration
 # ============================================================================
@@ -255,6 +260,28 @@ perform_cleanup() {
   
   if [[ "$DRY_RUN" == true ]]; then
     warning "DRY-RUN MODE - No files will be deleted"
+  fi
+  
+  # Check for running servers and stop them
+  if [[ "$DRY_RUN" != true ]] && command -v find_running_servers &>/dev/null; then
+    local running_servers
+    running_servers=$(find_running_servers "$SERVER_INSTALL_BASE")
+    
+    if [[ -n "$running_servers" ]]; then
+      warning "Found running Pentaho servers that must be stopped"
+      echo "$running_servers" | while read -r server; do
+        log "  • $(basename "$(dirname "$server")")/$(basename "$server")"
+      done
+      
+      log ""
+      if ! confirm "Stop running servers before cleanup?"; then
+        error "Cannot proceed with cleanup while servers are running"
+        exit 1
+      fi
+      
+      stop_all_servers "$SERVER_INSTALL_BASE" || die "Failed to stop all servers"
+      separator
+    fi
   fi
   
   # Show what will be cleaned
