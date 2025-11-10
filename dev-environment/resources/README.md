@@ -1,6 +1,6 @@
 # Resources Directory
 
-This directory contains supporting resources for the scripts-warehouse project.
+This directory contains supporting resources for the development environment setup.
 
 ## Structure
 

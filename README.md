@@ -50,9 +50,9 @@ Native installations for big data processing:
 - **Cleanup Scripts** - Remove installations, caches, temp files
 
 ### ⚡ AEL (Adaptive Execution Layer)
-*Being rebuilt with modular architecture*
-- Requires: PDI + Hadoop + Spark
-- See `ael/README.md` for current status
+*Future: Will provide Pentaho Spark execution for distributed processing*
+- Planned Requirements: PDI + Hadoop + Spark
+- Status: Not yet implemented
 
 ## Repository Structure
 
@@ -71,14 +71,11 @@ pentaho_toolkit/
 │   ├── hadoop/install-hadoop.sh              # Hadoop 3.4.1
 │   └── spark/install-spark.sh                # Spark 4.0.0
 │
-├── pentaho/                                  # Pentaho components
-│   ├── pdi/install-pdi.sh                    # PDI installer with license automation
-│   ├── server/install-server.sh              # Server installer with plugin discovery
-│   ├── server/configure-server.sh            # PostgreSQL configuration
-│   ├── server/manage-server.sh               # Server lifecycle (start/stop/status)
-│   └── cleanup.sh                            # Remove all Pentaho installations
-│
-└── ael/                                      # AEL (being rebuilt)
+└── pentaho/                                  # Pentaho components
+    ├── pdi/install-pdi.sh                    # PDI installer with license automation
+    ├── server/install-server.sh              # Server installer with plugin discovery
+    ├── server/manage-server.sh               # Server lifecycle (start/stop/status)
+    └── cleanup.sh                            # Remove all Pentaho installations
 ```
 
 ## Common Management Tasks
@@ -105,10 +102,9 @@ pentaho_toolkit/
 ## Documentation
 
 Each module has detailed docs:
-- **[Dev Environment](dev-environment/DEV_README.md)** - Full setup guide, troubleshooting
-- **[Data Platform](data-platform/README.md)** - Hadoop/Spark installation, S3 integration
-- **[Pentaho/PDI](pentaho/README.md)** - PDI installer, license automation
-- **[AEL](ael/README.md)** - AEL setup and architecture
+- **[Dev Environment](dev-environment/DEV_README.md)** - Complete setup guide, service management
+- **[Data Platform](data-platform/README.md)** - Hadoop/Spark installation and configuration
+- **[Pentaho Components](pentaho/README.md)** - PDI/Server installation, license automation, management
 
 ## Prerequisites
 
@@ -129,27 +125,19 @@ chmod -R +x .
 sudo usermod -aG docker $USER
 newgrp docker
 
-# Port conflicts
+# Port conflicts (check what's using a port)
 sudo lsof -i :8080
 ```
-
-**AEL-specific issues:** See `ael/AEL_TROUBLESHOOTING_AND_CONTAINERIZATION_SUMMARY.md`
 
 ## Development Status
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Dev Environment | ✅ Complete | PostgreSQL, Minio, Docker, Java |
+| Dev Environment | ✅ Complete | PostgreSQL, Minio, Docker, Java, Portainer |
 | Data Platform | ✅ Complete | Hadoop 3.4.1, Spark 4.0.0 |
 | PDI Installer | ✅ Complete | License automation, profiles |
-| Server Installer | ✅ Complete | Plugin discovery, version validation, management |
-| AEL | 🔄 In Progress | Rebuilding with modular design |
-
-## Origin
-
-Consolidates and improves:
-- `ael-automation` - Internal AEL deployment scripts
-- `scripts-warehouse` - Dev environment automation
+| Server Installer | ✅ Complete | Plugin discovery, HSQLDB (default) |
+| AEL | � Planned | Not yet implemented |
 
 ---
 

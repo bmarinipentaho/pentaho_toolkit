@@ -81,8 +81,8 @@ cd ~/pentaho/current/pdi/data-integration
 # Specific directory with server + plugins
 ./pentaho/server/install-server.sh ~/pentaho-builds/11.0.0.0-204/
 
-# With license automation
-./pentaho/server/install-server.sh --license-url https://flexnet.example.com/license
+# With license automation and auto-start
+./pentaho/server/install-server.sh --license-url https://flexnet.example.com/license --start
 ```
 
 ### Installation Structure
@@ -155,21 +155,17 @@ The installer automatically discovers and installs plugins:
 ./pentaho/server/manage-server.sh clean
 ```
 
-### PostgreSQL Configuration
+### Database Configuration
 
-```bash
-# Configure server to use PostgreSQL
-./pentaho/server/configure-server.sh ~/pentaho/11.0.0.0/204/server-current \
-  --host localhost \
-  --port 5432 \
-  --user pentaho \
-  --password password
-```
+**Default:** Server uses embedded HSQLDB (works out of box)
+- No configuration needed
+- Perfect for development/testing
+- Data stored in `pentaho-solutions/system/hibernate/`
 
-**Configured Databases:**
-- `hibernate` - JCR repository
-- `quartz` - Scheduler
-- `jackrabbit` - Content repository
+**PostgreSQL:** Available via Docker container but not auto-configured
+- Container: `pentaho-postgres` (pre-loaded with schemas)
+- Manual configuration required (JNDI datasources + repository.xml)
+- Future: May add auto-configuration script
 
 ### Access
 

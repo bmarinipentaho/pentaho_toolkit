@@ -15,8 +15,8 @@ These legacy `.deb` packages provide the older WebKitGTK 1.0 library required by
 
 ### Automated (Recommended)
 ```bash
-cd /path/to/scripts-warehouse
-./scripts/install-pentaho-dependencies.sh
+cd /path/to/pentaho_toolkit
+./dev-environment/setup/pentaho/install-pentaho-dependencies.sh
 ```
 
 ### Manual Installation

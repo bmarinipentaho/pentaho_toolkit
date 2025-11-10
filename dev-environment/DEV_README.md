@@ -1,4 +1,4 @@
-# Scripts Warehouse
+# Development Environment Setup
 
 Automated setup and management scripts for a Pentaho development environment on Ubuntu 22.04.
 
@@ -18,44 +18,41 @@ Sets up a complete development environment with:
 
 ```bash
 # Complete automated setup
-./scripts/setup/main.sh -y
+./dev-environment/setup/main.sh -y
 
 # Interactive mode (prompts for confirmation)
-./scripts/setup/main.sh
+./dev-environment/setup/main.sh
 ```
 
 ## Project Structure
 
 ```
-scripts-warehouse/
-├── scripts/
-│   ├── setup/
-│   │   ├── main.sh                          # Main setup script (start here)
-│   │   ├── system/                          # System installations
-│   │   │   ├── install-docker.sh
-│   │   │   ├── install-dev-tools.sh
-│   │   │   ├── install-vscode.sh
-│   │   │   ├── install-github-cli.sh
-│   │   │   └── configure-environment.sh
-│   │   ├── docker/
-│   │   │   └── postgres/                    # PostgreSQL Docker setup
-│   │   │       ├── docker-compose.yml
-│   │   │       ├── init-scripts/            # Database initialization
-│   │   │       └── pgadmin-config/          # Pre-configured servers
-│   │   └── pentaho/
-│   │       └── install-pentaho-dependencies.sh
-│   ├── manage/                              # Service management
-│   │   ├── postgres.sh                      # PostgreSQL operations
-│   │   └── portainer.sh                     # Portainer operations
-│   ├── utils/
-│   │   └── switch-java.sh                   # Java version switcher
-│   └── lib/
-│       └── common.sh                        # Shared functions
-├── resources/
-│   ├── packages/libwebkit/                  # LibWebKitGTK .deb files
-│   └── configs/                             # Config templates
-└── docs/
-    └── DATA-TYPE-SHOWCASE.md                # Database schema docs
+dev-environment/
+├── setup/
+│   ├── main.sh                              # Main setup script (start here)
+│   ├── system/                              # System installations
+│   │   ├── install-docker.sh
+│   │   ├── install-dev-tools.sh
+│   │   ├── install-vscode.sh
+│   │   ├── install-github-cli.sh
+│   │   └── configure-environment.sh
+│   ├── docker/
+│   │   ├── postgres/                        # PostgreSQL Docker setup
+│   │   │   ├── docker-compose.yml
+│   │   │   ├── init-scripts/                # Database initialization
+│   │   │   └── pgadmin-config/              # Pre-configured servers
+│   │   └── minio/                           # Minio S3 setup
+│   │       └── docker-compose.yml
+│   └── pentaho/
+│       └── install-pentaho-dependencies.sh
+├── manage/                                  # Service management
+│   ├── postgres.sh                          # PostgreSQL operations
+│   ├── minio.sh                             # Minio S3 operations
+│   └── portainer.sh                         # Portainer operations
+├── utils/
+│   └── switch-java.sh                       # Java version switcher
+└── resources/
+    └── packages/libwebkit/                  # LibWebKitGTK .deb files
 ```
 
 ## Daily Usage
@@ -63,28 +60,37 @@ scripts-warehouse/
 ### Manage PostgreSQL
 
 ```bash
-./scripts/manage/postgres.sh start           # Start PostgreSQL + pgAdmin
-./scripts/manage/postgres.sh stop            # Stop services
-./scripts/manage/postgres.sh status          # Check status
-./scripts/manage/postgres.sh logs            # View logs
-./scripts/manage/postgres.sh connect         # Connect to postgres db
-./scripts/manage/postgres.sh connect hibernate hibuser  # Connect to specific db
+./dev-environment/manage/postgres.sh start           # Start PostgreSQL + pgAdmin
+./dev-environment/manage/postgres.sh stop            # Stop services
+./dev-environment/manage/postgres.sh status          # Check status
+./dev-environment/manage/postgres.sh logs            # View logs
+./dev-environment/manage/postgres.sh connect         # Connect to postgres db
+./dev-environment/manage/postgres.sh connect hibernate hibuser  # Connect to specific db
+```
+
+### Manage Minio
+
+```bash
+./dev-environment/manage/minio.sh start              # Start Minio S3
+./dev-environment/manage/minio.sh stop               # Stop Minio
+./dev-environment/manage/minio.sh status             # Check status
+./dev-environment/manage/minio.sh buckets            # List buckets
 ```
 
 ### Manage Portainer
 
 ```bash
-./scripts/manage/portainer.sh start
-./scripts/manage/portainer.sh stop
-./scripts/manage/portainer.sh status
+./dev-environment/manage/portainer.sh start
+./dev-environment/manage/portainer.sh stop
+./dev-environment/manage/portainer.sh status
 ```
 
 ### Switch Java Versions
 
 ```bash
-./scripts/utils/switch-java.sh 8             # Java 8
-./scripts/utils/switch-java.sh 17            # Java 17
-./scripts/utils/switch-java.sh 21            # Java 21
+./dev-environment/utils/switch-java.sh 8             # Java 8
+./dev-environment/utils/switch-java.sh 17            # Java 17
+./dev-environment/utils/switch-java.sh 21            # Java 21
 ```
 
 ## Access Information
