@@ -41,8 +41,8 @@ check_status() {
         docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep pentaho-minio
         echo ""
         success "Minio is accessible at:"
-        echo "  • S3 API:     http://localhost:9000"
-        echo "  • Web Console: http://localhost:9001"
+        echo "  • S3 API:     http://localhost:19000"
+        echo "  • Web Console: http://localhost:19001"
     else
         echo "Minio container is not running."
     fi
@@ -92,8 +92,8 @@ start_services() {
     success "All services started"
     echo ""
     log "Access Information:"
-    echo "  • Web Console: http://localhost:9001"
-    echo "  • S3 API:      http://localhost:9000"
+    echo "  • Web Console: http://localhost:19001"
+    echo "  • S3 API:      http://localhost:19000"
     echo "  • Username:    admin"
     echo "  • Password:    password123"
     echo ""
@@ -176,8 +176,8 @@ show_info() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "📦 Minio S3-Compatible Object Storage"
-    echo "  Web Console:    http://localhost:9001"
-    echo "  S3 API:         http://localhost:9000"
+    echo "  Web Console:    http://localhost:19001"
+    echo "  S3 API:         http://localhost:19000"
     echo "  Root User:      admin"
     echo "  Root Password:  password123"
     echo ""
@@ -187,14 +187,14 @@ show_info() {
     echo "  • ael-artifacts  - AEL jars and dependencies"
     echo ""
     echo "🔧 S3 Configuration (for applications):"
-    echo "  Endpoint:       http://localhost:9000"
+    echo "  Endpoint:       http://localhost:19000"
     echo "  Access Key:     admin"
     echo "  Secret Key:     password123"
     echo "  Region:         us-east-1 (default)"
     echo ""
     echo "💻 AWS CLI Usage:"
-    echo "  aws --endpoint-url http://localhost:9000 s3 ls"
-    echo "  aws --endpoint-url http://localhost:9000 s3 cp file.txt s3://pentaho/"
+    echo "  aws --endpoint-url http://localhost:19000 s3 ls"
+    echo "  aws --endpoint-url http://localhost:19000 s3 cp file.txt s3://pentaho/"
     echo ""
     echo "📁 Management:"
     echo "  List buckets:   $0 buckets"
@@ -245,8 +245,8 @@ EXAMPLES:
     $0 clean -y         # Clean up (auto-confirm)
 
 ACCESS:
-    Web Console:  http://localhost:9001
-    S3 API:       http://localhost:9000
+    Web Console:  http://localhost:19001
+    S3 API:       http://localhost:19000
     Credentials:  admin / password123
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

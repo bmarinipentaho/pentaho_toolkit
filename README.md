@@ -32,7 +32,7 @@ Complete setup for Pentaho development on Ubuntu 22.04:
 
 **Access:**
 - pgAdmin: http://localhost:8888 (admin@pentaho.com / admin)
-- Minio Console: http://localhost:9001 (admin / password123)
+- Minio Console: http://localhost:19001 (admin / password123)
 - Portainer: https://localhost:9443
 
 ### 📦 Data Platform (Hadoop + Spark)

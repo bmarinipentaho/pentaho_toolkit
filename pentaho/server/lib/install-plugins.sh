@@ -101,12 +101,22 @@ install_plugin() {
        plugin_build=$(get_plugin_build "$plugin_name"); then
         
         # Validate version/build match
-        if [[ "$plugin_version" != "$server_version" ]] || \
-           [[ "$plugin_build" != "$server_build" ]]; then
-            error "Version mismatch: $plugin_name ($plugin_version-$plugin_build) != Server ($server_version-$server_build)"
+        # Extract major.minor from both (e.g., 11.0 from 11.0.0.0 or 11.0-QAT)
+        local server_major_minor="${server_version%%-*}"  # Strip -QAT suffix
+        server_major_minor="${server_major_minor%%.*}.${server_major_minor#*.}"  # Get X.Y
+        server_major_minor="${server_major_minor%%.*}"  # Keep only first two parts
+        
+        local plugin_major_minor="${plugin_version%%.*}.${plugin_version#*.}"
+        plugin_major_minor="${plugin_major_minor%%.*}"
+        
+        # Check build number matches
+        if [[ "$plugin_build" != "$server_build" ]]; then
+            error "Build mismatch: $plugin_name (build $plugin_build) != Server (build $server_build)"
             warning "Skipping incompatible plugin: $plugin_name"
             return 2  # Skip code
         fi
+        
+        log "Version check: plugin=$plugin_version (build $plugin_build), server=$server_version (build $server_build)"
     else
         warning "No version found in plugin filename: $plugin_name (installing anyway)"
     fi

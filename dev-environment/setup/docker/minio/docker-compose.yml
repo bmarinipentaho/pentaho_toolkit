@@ -14,8 +14,8 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "${MINIO_API_PORT:-9000}:9000"      # S3 API endpoint
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"  # Web console
+      - "19000:9000"      # S3 API endpoint (changed to avoid HSQLDB conflict)
+      - "19001:9001"      # Web console (changed to avoid HSQLDB conflict)
     networks:
       - minio-net
     healthcheck:
