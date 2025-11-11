@@ -49,7 +49,11 @@ cd ~/pentaho/current/pdi/data-integration
 - `--version VERSION` - Specify version (e.g., 11.0-QAT)
 - `--build NUMBER` - Specify build number
 - `--edition ce|ee` - Edition (default: ee)
+- `--skip-jdbc-drivers` - Skip automatic JDBC driver deployment (default: deploy)
 - `--force` - Overwrite existing installation
+
+**JDBC Driver Deployment:**
+By default, the installer runs the built-in `jdbc-distribution/distribute-files.sh` utility after extraction. This prepares the installation for custom JDBC drivers. Use `--skip-jdbc-drivers` to skip this step.
 
 ### Examples
 
@@ -173,6 +177,18 @@ After starting the server:
 - **Console:** http://localhost:8080/pentaho
 - **Default Credentials:** admin/password
 - **Karaf Console:** ssh://localhost:8181 (karaf/karaf)
+
+### Options
+
+**Key options:**
+- `--license-url URL` - Install license automatically
+- `--start` - Start server after installation
+- `--force` - Overwrite existing installation
+- `--skip-jdbc-drivers` - Skip automatic JDBC driver deployment (default: deploy)
+- `-y, --yes` - Auto-confirm all prompts
+
+**JDBC Driver Deployment:**
+By default, the installer runs the built-in `jdbc-distribution/distribute-files.sh` utility after extraction. This prepares the installation for custom JDBC drivers. Use `--skip-jdbc-drivers` to skip this step.
 
 ### Examples
 

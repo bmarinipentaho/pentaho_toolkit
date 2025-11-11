@@ -69,13 +69,14 @@ ARGUMENTS:
                           If omitted, searches ~/Downloads for pentaho-server*.zip
 
 OPTIONS:
-    --license-url URL     Flexnet license download URL
-    --postgres-host HOST  PostgreSQL host (default: localhost)
-    --postgres-port PORT  PostgreSQL port (default: 5432)
-    --start              Start server after successful installation
-    --force              Reinstall even if version exists
-    -y, --yes            Auto-confirm all prompts
-    -h, --help           Show this help message
+    --license-url URL         Flexnet license download URL
+    --postgres-host HOST      PostgreSQL host (default: localhost)
+    --postgres-port PORT      PostgreSQL port (default: 5432)
+    --start                  Start server after successful installation
+    --skip-jdbc-drivers      Skip automatic JDBC driver deployment (default: deploy)
+    --force                  Reinstall even if version exists
+    -y, --yes                Auto-confirm all prompts
+    -h, --help               Show this help message
 
 DIRECTORY STRUCTURE:
     Supports multiple layouts for server + plugins:
@@ -242,6 +243,31 @@ install_server() {
     return 0
 }
 
+# Deploy JDBC drivers using built-in distribute-files.sh
+deploy_jdbc_drivers() {
+    local install_base="$PENTAHO_BASE/$VERSION/$BUILD/server"
+    local jdbc_dist_dir="$install_base/jdbc-distribution"
+    
+    if [[ ! -d "$jdbc_dist_dir" ]]; then
+        warning "JDBC distribution directory not found: $jdbc_dist_dir"
+        return 0
+    fi
+    
+    if [[ ! -f "$jdbc_dist_dir/distribute-files.sh" ]]; then
+        warning "JDBC distribute script not found: $jdbc_dist_dir/distribute-files.sh"
+        return 0
+    fi
+    
+    log "Deploying JDBC drivers..."
+    
+    # Run the distribute-files.sh script
+    if (cd "$jdbc_dist_dir" && bash distribute-files.sh > /dev/null 2>&1); then
+        success "✓ JDBC drivers deployed"
+    else
+        warning "JDBC driver deployment encountered issues (may be non-critical)"
+    fi
+}
+
 # Install plugins wrapper
 install_plugins() {
     local plugins_dir="$1"
@@ -311,6 +337,7 @@ main() {
     local input_path=""
     local server_zip=""
     local plugins_paths=()
+    local skip_jdbc=false
     
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
@@ -329,6 +356,10 @@ main() {
                 ;;
             --start)
                 START_SERVER=true
+                shift
+                ;;
+            --skip-jdbc-drivers)
+                skip_jdbc=true
                 shift
                 ;;
             --force)
@@ -414,6 +445,13 @@ main() {
     
     # Install server
     install_server "$server_zip"
+    
+    # Deploy JDBC drivers (default: enabled)
+    if [[ "$skip_jdbc" == false ]]; then
+        deploy_jdbc_drivers
+    else
+        log "⊘ JDBC driver deployment skipped"
+    fi
     
     # Install plugins
     if [[ ${#plugins_paths[@]} -gt 0 ]]; then

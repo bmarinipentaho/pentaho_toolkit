@@ -68,6 +68,7 @@ OPTIONS:
   --license-url URL         Install license from flexnet URL
   --install-dir DIR         Custom installation directory (default: ~/pentaho/{version}/{build}/pdi)
   --no-symlink             Don't create 'current' symlink
+  --skip-jdbc-drivers      Skip automatic JDBC driver deployment (default: deploy)
   --force                  Overwrite existing installation
   -h, --help               Show this help message
 
@@ -230,6 +231,31 @@ create_current_symlink() {
   success "Created symlink: current -> $relative_path"
 }
 
+# Deploy JDBC drivers using built-in distribute-files.sh
+deploy_jdbc_drivers() {
+  local install_dir="$1"
+  local jdbc_dist_dir="$install_dir/jdbc-distribution"
+  
+  if [[ ! -d "$jdbc_dist_dir" ]]; then
+    warning "JDBC distribution directory not found: $jdbc_dist_dir"
+    return 0
+  fi
+  
+  if [[ ! -f "$jdbc_dist_dir/distribute-files.sh" ]]; then
+    warning "JDBC distribute script not found: $jdbc_dist_dir/distribute-files.sh"
+    return 0
+  fi
+  
+  log "Deploying JDBC drivers..."
+  
+  # Run the distribute-files.sh script
+  if (cd "$jdbc_dist_dir" && bash distribute-files.sh > /dev/null 2>&1); then
+    success "✓ JDBC drivers deployed"
+  else
+    warning "JDBC driver deployment encountered issues (may be non-critical)"
+  fi
+}
+
 # ============================================================================
 # Main Installation Logic
 # ============================================================================
@@ -243,6 +269,7 @@ main() {
   local license_url=""
   local create_symlink=true
   local force=false
+  local skip_jdbc=false
   
   # Parse arguments
   while [[ $# -gt 0 ]]; do
@@ -277,6 +304,10 @@ main() {
         ;;
       --no-symlink)
         create_symlink=false
+        shift
+        ;;
+      --skip-jdbc-drivers)
+        skip_jdbc=true
         shift
         ;;
       --force)
@@ -356,6 +387,13 @@ main() {
       
       install_pdi_from_zip "$zip_file" "$install_dir"
       
+      # Deploy JDBC drivers (default: enabled)
+      if [[ "$skip_jdbc" == false ]]; then
+        deploy_jdbc_drivers "$install_dir"
+      else
+        log "⊘ JDBC driver deployment skipped"
+      fi
+      
       # Install license if URL provided
       if [[ -n "$license_url" ]]; then
         install_license "$install_dir" "$license_url"
@@ -386,6 +424,13 @@ main() {
       
       download_pdi "$version" "$build" "$edition" "$temp_zip"
       install_pdi_from_zip "$temp_zip" "$install_dir"
+      
+      # Deploy JDBC drivers (default: enabled)
+      if [[ "$skip_jdbc" == false ]]; then
+        deploy_jdbc_drivers "$install_dir"
+      else
+        log "⊘ JDBC driver deployment skipped"
+      fi
       
       # Install license if URL provided
       if [[ -n "$license_url" ]]; then
