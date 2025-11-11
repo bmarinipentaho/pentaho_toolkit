@@ -9,10 +9,11 @@ Sets up a complete development environment with:
 - **PostgreSQL 15** with Pentaho databases (hibernate, quartz, jackrabbit) + data type testing
 - **pgAdmin 4** web interface at http://localhost:8888
 - **Portainer** Docker management at https://localhost:9443
-- **Development tools** - git, Python, network utilities, modern CLI tools
+- **Development tools** - git, Python, network utilities, modern CLI tools (jq, xmlstarlet, tmux, fzf)
 - **Docker** + Docker Compose
 - **Java versions** 8, 17, 21 with easy switching
 - **LibWebKitGTK 1.0** for Pentaho UI tools (Spoon, Report Designer)
+- **Text editors** - VS Code, gedit, vim, nano
 
 ## Quick Start
 
@@ -114,12 +115,25 @@ dev-environment/
 ## Components Installed
 
 ### Development Tools
-- **Basics**: curl, wget, git, vim, nano, tree, mc, ncdu
+- **Text Editors**: gedit (GUI), vim, nano
+- **Basics**: curl, wget, git, tree, mc, ncdu
 - **Monitoring**: htop, glances, iotop, lsof, strace
 - **Network**: nmap, tcpdump, netcat, mtr, dnsutils
 - **Languages**: Python 3, pip, venv
 - **Database Clients**: postgresql-client, mysql-client
-- **Modern CLI**: fzf, bat, ripgrep (rg), fd-find, httpie, jq, xmlstarlet
+- **Modern CLI Tools**:
+  - `jq` - JSON parsing and manipulation
+  - `yq` - YAML parsing and manipulation
+  - `xmlstarlet` - XML parsing and transformation
+  - `fzf` - Fuzzy finder for files and commands
+  - `tmux` - Terminal multiplexer (persistent sessions)
+  - `pv` - Pipe viewer (progress monitoring)
+  - `parallel` - GNU parallel for batch operations
+  - `ag` (silversearcher) - Fast code search
+  - `bat` - cat with syntax highlighting
+  - `ripgrep` (rg) - Fast grep alternative
+  - `fd-find` - Fast find alternative
+  - `httpie` - User-friendly HTTP client
 - **Security**: Kerberos client, OpenSSL
 
 ### Environment Setup
@@ -214,6 +228,67 @@ docker rm -f pentaho-postgres pentaho-pgadmin  # Remove old containers
 - Non-root user with sudo privileges
 - ~10GB free disk space
 - Internet connection
+
+## CLI Tools Usage Examples
+
+### JSON/XML Parsing
+```bash
+# Parse JSON output from Pentaho API
+curl http://localhost:8080/pentaho/api/repos | jq '.children[] | .name'
+
+# Modify Pentaho XML config
+xmlstarlet ed -u "//param[@name='url']/@value" -v "jdbc:postgresql://localhost:5432/hibernate" repository.xml
+
+# Parse YAML config
+yq '.version' config.yaml
+```
+
+### File Search & Navigation
+```bash
+# Fuzzy find files (opens interactive selector)
+fzf
+
+# Search code (faster than grep)
+ag "className" ~/pentaho/
+rg "function.*transform" --type java
+
+# Find files by name
+fd "*.ktr" ~/pentaho/
+```
+
+### Terminal Management
+```bash
+# Start tmux session
+tmux new -s pentaho
+
+# Detach: Ctrl+B, then D
+# Reattach: tmux attach -t pentaho
+# List sessions: tmux ls
+```
+
+### Progress Monitoring
+```bash
+# Monitor file copy progress
+pv large-file.zip | unzip -
+
+# Monitor database restore
+pv database-dump.sql | psql -U postgres
+
+# Batch operations with progress
+find . -name "*.log" | parallel gzip {}
+```
+
+### Quick File Viewing
+```bash
+# Quick look at config file
+gedit ~/pentaho/configs/kettle.properties &
+
+# View with syntax highlighting
+bat ~/pentaho/configs/repository.xml
+
+# HTTP requests
+http GET http://localhost:8080/pentaho/api/version
+```
 
 ## Data Type Testing
 

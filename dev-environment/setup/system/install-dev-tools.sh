@@ -35,6 +35,7 @@ log "Installing editors and file management tools..."
 sudo apt install -y \
     vim \
     nano \
+    gedit \
     tree \
     mc \
     ncdu
@@ -90,8 +91,20 @@ sudo apt install -y \
     httpie \
     jq \
     xmlstarlet \
+    pv \
+    tmux \
+    parallel \
+    silversearcher-ag \
     postgresql-client \
     mysql-client
+
+# Install yq via snap (not available in apt)
+if command -v snap &> /dev/null; then
+    log "Installing yq via snap..."
+    sudo snap install yq || warning "Failed to install yq via snap"
+else
+    warning "snapd not available, skipping yq installation"
+fi
 
 # Try to install eza (modern ls replacement) - may not be available in all repos
 log "Attempting to install optional tools..."
